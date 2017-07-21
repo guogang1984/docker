@@ -1,0 +1,21 @@
+map $http_user_agent $badAgent {
+        default         0;
+        ~*malicious     1;
+        ~*backdoor      1;
+        ~*netcrawler    1;
+        ~Antivirx       1;
+        ~Arian          1;
+        ~webbandit      1;
+}
+
+map $http_user_agent $notWxAgent {
+        default              1;
+        ~*MicroMessenger     0;
+}
+
+map $http_user_agent $mobileAgent {
+        default              0;
+        ~*Android            1;
+        ~*iPhone             1;
+        ~*webOS              1;
+}
