@@ -13,6 +13,11 @@ map $http_user_agent $notWxAgent {
         ~*MicroMessenger     0;
 }
 
+map $http_user_agent $wxAgent {
+        default              0;
+        ~*MicroMessenger     1;
+}
+
 map $http_user_agent $mobileAgent {
         default              0;
         ~*Android            1;
