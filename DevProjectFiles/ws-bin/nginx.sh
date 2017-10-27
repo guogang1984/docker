@@ -5,11 +5,19 @@ DOCKER_FILE_NGINX=~/DevProgram/docker/topflames/nginx/docker-compose.yml
 # -----------------------------------------------------------------------------
 DOCKER_NGINX_CID=`docker ps -f name=web-nginx -q`
 # -----------------------------------------------------------------------------
+# defined PROJ_FOLDER
+[ -z "$PROJ_FOLDER" ] && PROJ_FOLDER=~/DevProjectFiles
 # defined PROJ_CONF_NGINX
 [ -z "$PROJ_CONF_NGINX" ] && PROJ_CONF_NGINX=${PROJ_FOLDER}/ws-conf/nginx
 # -----------------------------------------------------------------------------
 
 if [ "$1" = "start" ]; then
+
+  [ ! -f "${PROJ_CONF_NGINX}/geoip/GeoIP.dat" ] && \
+     `wget -N -O ${PROJ_CONF_NGINX}/geoip/GeoIP.dat.gz http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz && gunzip ${PROJ_CONF_NGINX}/geoip/GeoIP.dat.gz`
+  [ ! -f "${PROJ_CONF_NGINX}/geoip/GeoLiteCity.dat" ] && \
+     `wget -N -O ${PROJ_CONF_NGINX}/geoip/GeoLiteCity.dat.gz http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz && gunzip ${PROJ_CONF_NGINX}/geoip/GeoLiteCity.dat.gz`
+
   docker-compose -f $DOCKER_FILE_NGINX up -d
 elif [ "$1" = "stop" ]; then
   docker-compose -f $DOCKER_FILE_NGINX down
