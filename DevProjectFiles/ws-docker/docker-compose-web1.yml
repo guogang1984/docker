@@ -1,0 +1,29 @@
+version: "2"
+services:
+  tomcat01:
+    image: 'registry.cn-shenzhen.aliyuncs.com/topflames/java:jdk8tomcat7'
+    container_name: web1
+    restart: unless-stopped
+    environment:
+      TZ: 'Asia/Shanghai'
+      CATALINA_TMPDIR : '/tmp/java/tmp'
+      JAVA_OPTS : ' -Djava.io.tmpdir=/tmp/java/tmp -Djava.security.egd=file:/dev/./urandom -Duser.timezone=GMT+08 -server -Xms1024m -Xmx2048m -XX:PermSize=256m -XX:MaxPermSize=512m '
+    ports:
+      - '127.0.0.1:18081:8080'
+    external_links:
+      - db-mysql:mysql
+      - db-redis3:redis3
+    volumes:
+      - ~/DevProjectFiles/ws-conf/tomcat7/context.xml.redis.docker:/opt/tomcat/conf/context.xml
+      - ~/DevProjectFiles/ws-conf/tomcat7/localhost18081:/opt/tomcat/conf/Catalina/localhost
+      - ~/DevProjectFiles/ws-root/:/DevProjectFiles/ws-root/
+      - ~/tmp/logs/web1:/tmp/logs
+      - ~/tmp/logs/web1:/tmp/java
+      - ~/tmp/logs/web1:/logs
+    command: "/opt/tomcat/bin/catalina.sh run"
+    networks:
+      - topflames-net
+networks:
+  topflames-net:
+    external:
+      name: topflames-net

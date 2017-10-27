@@ -1,0 +1,30 @@
+# --------------------------------------------------------
+# Generating docker compose file at 20171027163438
+# APP_CONTAINER_NAME=dac-cuiyu-spray, APP_PORTS=35555:18888, APP_NETWORKS=topflames-net
+# APP_JAR_NAME=cuiyu-spray-dac-0.0.1-SNAPSHOT.jar
+# --------------------------------------------------------
+version: "2"
+services:
+  dac:
+    image: 'registry.cn-shenzhen.aliyuncs.com/topflames/java:jdk8tomcat7'
+    container_name: dac-cuiyu-spray
+    restart: unless-stopped
+    environment:
+      TZ: 'Asia/Shanghai'
+    ports:
+      - '35555:18888'
+    external_links:
+        - db-mysql:mysql
+        - db-redis3:redis3
+    volumes:
+      - ~/DevProjectFiles/ws-root/dac-cuiyu-spray:/DevProjectFiles/ws-root/dac-cuiyu-spray
+      - ~/tmp/logs/dac-cuiyu-spray:/tmp/logs
+      # dac
+      - ~/tmp/logs/dac:/tmp/logs
+    command: [  "java", "-Djava.security.egd=file:/dev/./urandom", "-Duser.timezone=GMT+08", "-jar","/DevProjectFiles/ws-root/dac-cuiyu-spray/cuiyu-spray-dac-0.0.1-SNAPSHOT.jar", "--spring.profiles.active=dev", "--spring.config.location=/DevProjectFiles/ws-root/dac-cuiyu-spray/application.properties"  ]
+    networks:
+      - topflames-net
+networks:
+  topflames-net:
+    external:
+      name: topflames-net

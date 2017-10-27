@@ -1,0 +1,19 @@
+# nginx-docker-compose.yml 
+# use host network
+version: "2"
+services:
+  nginx:
+    image: openresty/openresty:alpine-fat
+    container_name: web-nginx
+    #ports:
+    #  - '80:8080'
+    volumes:
+      # fixed UTC+8 localtime problem
+      - ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro
+      # nginx conf default path
+      - ~/DevProjectFiles/ws-conf/nginx/:/usr/local/openresty/nginx/conf/
+      # nginx root  default path
+      - ~/DevProjectFiles/ws-root/:/DevProjectFiles/ws-root/
+      # nginx logs  default path     
+      - ~/tmp/logs/nginx:/usr/local/openresty/nginx/logs
+    network_mode: "host"
