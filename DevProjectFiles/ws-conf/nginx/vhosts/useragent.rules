@@ -24,3 +24,13 @@ map $http_user_agent $mobileAgent {
         ~*iPhone             1;
         ~*webOS              1;
 }
+
+map $http_user_agent $androidAgent {
+        default              0;
+        ~*Android            1;
+}
+
+map $http_user_agent $iosAgent {
+        default              0;
+        ~*iPhone             1;
+}
