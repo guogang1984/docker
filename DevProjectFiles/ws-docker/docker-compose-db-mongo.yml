@@ -1,0 +1,17 @@
+version: "2"
+services:
+  mongo:
+    image: 'mongo:3.4'
+    container_name: db-mongo
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:27017:27017'
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ~/DevProjectFiles/ws-data/mongo:/data
+    networks:
+      - topflames-net
+networks:
+  topflames-net:
+    external:
+      name: topflames-net

@@ -1,0 +1,21 @@
+version: "2"
+services:
+  mysql:
+    image: 'mysql:5.7'
+    container_name: db-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 'root'
+    ports:
+      - '127.0.0.1:3306:3306'
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ~/DevProjectFiles/ws-conf/mysql:/etc/mysql/conf.d
+      - ~/DevProjectFiles/ws-data/mysql:/var/lib/mysql
+      - ~/DevProjectFiles/ws-back:/DevProjectFiles/ws-back
+    networks:
+      - topflames-net
+networks:
+  topflames-net:
+    external:
+      name: topflames-net
