@@ -6,6 +6,8 @@
 DOCKER_FILE_WEB1=~/DevProjectFiles/ws-docker/docker-compose-web1.yml
 DOCKER_FILE_WEB2=~/DevProjectFiles/ws-docker/docker-compose-web2.yml
 
+DOCKER_FILE_WEB_DEV1=~/DevProjectFiles/ws-docker/docker-compose-web-dev1.yml
+DOCKER_FILE_WEB_DEV2=~/DevProjectFiles/ws-docker/docker-compose-web-dev2.yml
 # -----------------------------------------------------------------------------
 # defined PROJ_FOLDER
 [ -z "$PROJ_FOLDER" ] && PROJ_FOLDER=~/DevProjectFiles
@@ -51,6 +53,18 @@ RSYNC_REMOTE_OPTS="--no-iconv -avzP --progress --delete --password-file=${REMOTE
 
 [ ! -d "~/tmp/logs/web1/tmp" ] && mkdir -p ~/tmp/logs/web1/tmp
 [ ! -d "~/tmp/logs/web2/tmp" ] && mkdir -p ~/tmp/logs/web2/tmp
+
+
+[ ! -f "${PROJ_FOLDER}/ws-conf/tomcat7/localhost28081/${DOCKER_PROJ_WEB_NAME}-dev.xml" ] && \
+  `mkdir -p ${PROJ_FOLDER}/ws-conf/tomcat7/localhost28081/ && echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/${DOCKER_PROJ_WEB_NAME}-dev-1\" />" > ${PROJ_FOLDER}/ws-conf/tomcat7/localhost28081/${DOCKER_PROJ_WEB_NAME}-dev.xml `
+
+[ ! -f "${PROJ_FOLDER}/ws-conf/tomcat7/localhost28082/${DOCKER_PROJ_WEB_NAME}-dev.xml" ] && \
+  `mkdir -p ${PROJ_FOLDER}/ws-conf/tomcat7/localhost28082/ && echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/${DOCKER_PROJ_WEB_NAME}-dev-2\" />" > ${PROJ_FOLDER}/ws-conf/tomcat7/localhost28082/${DOCKER_PROJ_WEB_NAME}-dev.xml `
+
+[ ! -d "~/tmp/logs/web-dev1/tmp" ] && mkdir -p ~/tmp/logs/web-dev1/tmp
+[ ! -d "~/tmp/logs/web-dev2/tmp" ] && mkdir -p ~/tmp/logs/web-dev2/tmp
+
+
 # -----------------------------------------------------------------------------
 
 if [ "$1" = "pull" ] ; then
@@ -65,28 +79,58 @@ if [ "$1" = "pull" ] ; then
     DIST_FOLDER=${PROJ_RELEASE}
     rsync ${RSYNC_REMOTE_OPTS} ${SOURCE_FOLDER}/${DOCKER_PROJ_WEB_NAME} ${DIST_FOLDER}
     echo "  " && echo "rsync ${SOURCE_FOLDER}/${DOCKER_PROJ_WEB_NAME} ${DIST_FOLDER} success!"
+
+    SOURCE_FOLDER=${REMOTE_RELEASE_FOLDER}
+    DIST_FOLDER=${PROJ_RELEASE}
+    rsync ${RSYNC_REMOTE_OPTS} ${SOURCE_FOLDER}/${DOCKER_PROJ_WEB_NAME}-dev ${DIST_FOLDER}
+    echo "  " && echo "rsync ${SOURCE_FOLDER}/${DOCKER_PROJ_WEB_NAME}-dev ${DIST_FOLDER} success!"
   fi
 
 elif [ "$1" = "sync" ]; then
   shift
   if [ "$1" = "1" ] || [ "$1" = "2" ]; then
-    SOURCE_FOLDER=${PROJ_RELEASE}/${DOCKER_PROJ_WEB_NAME}/target/${DOCKER_PROJ_WEB_NAME}-1.0-SNAPSHOT/
-    DIST_FOLDER=${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/
-    rsync ${RSYNC_OPTS} ${SOURCE_FOLDER} ${DIST_FOLDER}
-    cp ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.docker.properties ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.properties
+    if [ ! -z "$2" ]; then
+      SOURCE_FOLDER=${PROJ_RELEASE}/${DOCKER_PROJ_WEB_NAME}/target/$2/
+      DIST_FOLDER=${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/
+      rsync ${RSYNC_OPTS} ${SOURCE_FOLDER} ${DIST_FOLDER}
+      cp ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.docker.properties ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.properties            
+    else
+      SOURCE_FOLDER=${PROJ_RELEASE}/${DOCKER_PROJ_WEB_NAME}/target/${DOCKER_PROJ_WEB_NAME}-1.0-SNAPSHOT/
+      DIST_FOLDER=${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/
+      rsync ${RSYNC_OPTS} ${SOURCE_FOLDER} ${DIST_FOLDER}
+      cp ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.docker.properties ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.properties      
+    fi 
+    echo "  "
+    echo "rsync ${SOURCE_FOLDER} ${DIST_FOLDER} success!"
+  elif [ "$1" = "dev-1" ] || [ "$1" = "dev-2" ];  then
+    if [ ! -z "$2" ]; then
+      SOURCE_FOLDER=${PROJ_RELEASE}/${DOCKER_PROJ_WEB_NAME}-dev/target/$2/
+      DIST_FOLDER=${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/
+      rsync ${RSYNC_OPTS} ${SOURCE_FOLDER} ${DIST_FOLDER}
+      cp ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.dev.docker.properties ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.properties
+    else
+      SOURCE_FOLDER=${PROJ_RELEASE}/${DOCKER_PROJ_WEB_NAME}-dev/target/${DOCKER_PROJ_WEB_NAME}-1.0-SNAPSHOT/
+      DIST_FOLDER=${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/
+      rsync ${RSYNC_OPTS} ${SOURCE_FOLDER} ${DIST_FOLDER}
+      cp ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.dev.docker.properties ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.properties
+    fi 
     echo "  "
     echo "rsync ${SOURCE_FOLDER} ${DIST_FOLDER} success!"
   else
-    echo "sync [1|2] ?"
+    echo "sync [1|2|dev-1|dev-2] ?"
   fi
 elif [ "$1" = "start" ]; then
   shift
-  [ "$1" = "1" ] && `docker-compose -f $DOCKER_FILE_WEB1 up -d ` && exit 1
-  [ "$1" = "2" ] && `docker-compose -f $DOCKER_FILE_WEB2 up -d` && exit 1
+  [ "$1" = "1" ]     && `docker-compose -f $DOCKER_FILE_WEB1 up -d ` && exit 1
+  [ "$1" = "2" ]     && `docker-compose -f $DOCKER_FILE_WEB2 up -d` && exit 1
+  [ "$1" = "dev-1" ] && `docker-compose -f $DOCKER_FILE_WEB_DEV1 up -d ` && exit 1
+  [ "$1" = "dev-2" ] && `docker-compose -f $DOCKER_FILE_WEB_DEV2 up -d` && exit 1
 elif [ "$1" = "stop" ]; then
   shift
-  [ "$1" = "1" ] && `docker-compose -f $DOCKER_FILE_WEB1 down ` && exit 1
-  [ "$1" = "2" ] && `docker-compose -f $DOCKER_FILE_WEB2 down ` && exit 1
+  [ "$1" = "1" ]     && `docker-compose -f $DOCKER_FILE_WEB1 down ` && exit 1
+  [ "$1" = "2" ]     && `docker-compose -f $DOCKER_FILE_WEB2 down ` && exit 1
+  [ "$1" = "dev-1" ] && `docker-compose -f $DOCKER_FILE_WEB_DEV1 down ` && exit 1
+  [ "$1" = "dev-2" ] && `docker-compose -f $DOCKER_FILE_WEB_DEV2 down ` && exit 1
 elif [ "$1" = "status" ]; then
   shift
   echo -e "the web status is checked every 5 seconds, 200 is OK Interrupt Ctrl + C "
@@ -94,8 +138,8 @@ elif [ "$1" = "status" ]; then
   do
     status18081=`curl -I -m 10 -o /dev/null -s -w %{http_code}  127.0.0.1:18081/${DOCKER_PROJ_WEB_NAME}/login`
     status18082=`curl -I -m 10 -o /dev/null -s -w %{http_code}  127.0.0.1:18082/${DOCKER_PROJ_WEB_NAME}/login`
-    status18081dev=`curl -I -m 10 -o /dev/null -s -w %{http_code}  127.0.0.1:18081/${DOCKER_PROJ_WEB_NAME}-dev/login`
-    status18082dev=`curl -I -m 10 -o /dev/null -s -w %{http_code}  127.0.0.1:18082/${DOCKER_PROJ_WEB_NAME}-dev/login`
+    status18081dev=`curl -I -m 10 -o /dev/null -s -w %{http_code}  127.0.0.1:28081/${DOCKER_PROJ_WEB_NAME}-dev/login`
+    status18082dev=`curl -I -m 10 -o /dev/null -s -w %{http_code}  127.0.0.1:28082/${DOCKER_PROJ_WEB_NAME}-dev/login`
     echo -e "web1:${DOCKER_PROJ_WEB_NAME}/login CODE:\033[32m ${status18081} \033[0m   |   \c"
     echo -e "web2:${DOCKER_PROJ_WEB_NAME}/login CODE:\033[32m ${status18082} \033[0m   ||   \c"
     echo -e "web1 dev:${DOCKER_PROJ_WEB_NAME}/login CODE:\033[32m ${status18081dev} \033[0m   |   \c"
@@ -111,8 +155,8 @@ else
   echo "commands:"     
   echo "  status                              Web Status is checked every 5 seconds,  Interrupt Ctrl + C"
   echo "  pull                                Pull Web ${DOCKER_PROJ_WEB_NAME} binary code From 120.24.*.*"
-  echo "  sync  [1|2]                         Sync Web binary code to ws-root"
-  echo "  start [1|2]                         Web Start, waiting up to 5 seconds for the process to end"
-  echo "  stop  [1|2]                         Web Stop , waiting up to 5 seconds for the process to end"
+  echo "  sync  [1|2|dev-1|dev-2]             Sync Web binary code to ws-root"
+  echo "  start [1|2|dev-1|dev-2]             Web Start, waiting up to 5 seconds for the process to end"
+  echo "  stop  [1|2|dev-1|dev-2]             Web Stop , waiting up to 5 seconds for the process to end"
   exit 1
 fi

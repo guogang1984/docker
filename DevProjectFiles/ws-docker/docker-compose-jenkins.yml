@@ -1,0 +1,26 @@
+# docker-jenkins.yml 
+# rm -rf ~/DevProjectFiles/ws-conf/jenkins/*
+# This may also be found at: /var/jenkins_home/secrets/initialAdminPassword
+# cat ~/DevProjectFiles/ws-conf/jenkins/secrets/initialAdminPassword
+version: '2'
+services:
+    jenkins:
+      image: 'jenkins/jenkins:alpine'
+      container_name: jenkins
+      restart: unless-stopped
+      environment:
+        TZ: 'Asia/Shanghai'
+      volumes:
+        - ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro
+        - ~/DevProjectFiles/ws-conf/jenkins:/var/jenkins_home
+        #- /bin/docker:/usr/bin/docker
+        #- /var/run/docker.sock:/var/run/docker.sock
+      ports:
+        - "9000:8080"
+        - "50000:50000"
+      networks:
+        - topflames-net
+networks:
+  topflames-net:
+    external:
+      name: topflames-net

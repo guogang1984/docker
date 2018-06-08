@@ -1,14 +1,14 @@
 version: "2"
 services:
   redis3:
-    image: redis:3.0.7-alpine
-    container_name: db-redis3
+    image: redis:3-alpine
+    container_name: db-redis3-1
     restart: unless-stopped
     ports:
       - '127.0.0.1:6379:6379'
     volumes:
       - ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro
-      - ~/DevProjectFiles/ws-data/redis3:/data
+      - ~/DevProjectFiles/ws-data/redis3-1:/data
     networks:
       - topflames-net
 networks:

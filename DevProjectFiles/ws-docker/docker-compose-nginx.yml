@@ -5,6 +5,7 @@ services:
   nginx:
     image: openresty/openresty:alpine-fat
     container_name: web-nginx
+    restart: unless-stopped
     #ports:
     #  - '80:8080'
     volumes:

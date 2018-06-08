@@ -1,6 +1,6 @@
 version: "2"
 services:
-  tomcat01:
+  tomcat02:
     image: 'registry.cn-shenzhen.aliyuncs.com/topflames/java:jdk8tomcat7'
     container_name: web2
     restart: unless-stopped
@@ -12,7 +12,7 @@ services:
       - '127.0.0.1:18082:8080'
     external_links:
       - db-mysql:mysql
-      - db-redis3:redis3
+      - db-redis3-1:redis3
     volumes:
       - ~/DevProjectFiles/ws-conf/tomcat7/context.xml.redis.docker:/opt/tomcat/conf/context.xml
       - ~/DevProjectFiles/ws-conf/tomcat7/localhost18082:/opt/tomcat/conf/Catalina/localhost
