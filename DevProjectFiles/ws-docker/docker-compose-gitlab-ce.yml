@@ -5,15 +5,15 @@
 version: '2'
 services:
     gitlab:
-      image: 'twang2218/gitlab-ce-zh:10.0.3'
+      image: 'twang2218/gitlab-ce-zh:11.0.1'
       container_name: gitlab
       restart: unless-stopped
-      hostname: '119.23.129.38'
+      hostname: '59.111.89.62'
       environment:
         TZ: 'Asia/Shanghai'
         GITLAB_BACKUP_SCHEDULE: 'daily'
         GITLAB_OMNIBUS_CONFIG: |
-          external_url 'http://119.23.129.38'
+          external_url 'http://source.topflames.com'
           gitlab_rails['time_zone'] = 'Asia/Shanghai'
           # 需要配置到 gitlab.rb 中的配置可以在这里配置，每个配置一行，注意缩进。
           # 比如下面的电子邮件的配置：
