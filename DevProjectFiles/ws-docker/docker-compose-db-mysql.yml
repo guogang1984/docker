@@ -1,3 +1,22 @@
+# --------------------------------------------------------
+#
+# 
+# docker run \
+#   --hostname mysql \
+#   --name db-mysql \
+#   --restart=unless-stopped  \
+#   -e MYSQL_ROOT_PASSWORD='root' \
+#   -p 127.0.0.1:3306:3306 \
+#   -v ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro \
+#   -v ~/DevProjectFiles/ws-conf/mysql:/etc/mysql/conf.d \
+#   -v ~/DevProjectFiles/ws-data/mysql:/var/lib/mysql \
+#   -v ~/DevProjectFiles/ws-back:/DevProjectFiles/ws-back \
+#   --privileged \
+#   --net=topflames-net \
+#   -d mysql:5.7
+#
+# --------------------------------------------------------
+
 version: "2"
 services:
   mysql:
@@ -9,7 +28,7 @@ services:
     ports:
       - '127.0.0.1:3306:3306'
     volumes:
-      - /etc/localtime:/etc/localtime:ro
+      - ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro
       - ~/DevProjectFiles/ws-conf/mysql:/etc/mysql/conf.d
       - ~/DevProjectFiles/ws-data/mysql:/var/lib/mysql
       - ~/DevProjectFiles/ws-back:/DevProjectFiles/ws-back

@@ -1,9 +1,24 @@
 # nginx-docker-compose.yml 
 # use host network
+###
+#
+# 
+# docker run \
+#   --name web-nginx \
+#   --restart=unless-stopped  \
+#   -v ~/DevProjectFiles/ws-conf/nginx/:/usr/local/openresty/nginx/conf/ \
+#   -v ~/DevProjectFiles/ws-root/:/DevProjectFiles/ws-root/ \
+#   -v ~/tmp/logs/nginx:/usr/local/openresty/nginx/logs \
+#   --privileged \
+#   --net=host \
+#   -d guogang1984/alpine-openresty:alpine-fat
+#
+# docker stop web-nginx && docker rm  web-nginx
+###
 version: "2"
 services:
   nginx:
-    image: openresty/openresty:alpine-fat
+    image: guogang1984/alpine-openresty:alpine-fat
     container_name: web-nginx
     restart: unless-stopped
     #ports:

@@ -1,0 +1,11 @@
+# username/password   nacos/nacos
+# docker run \
+#   --name nacos \
+#   --net topflames-net \
+#   -p 8848:8848 \
+#   -e MODE=standalone \
+#   -d nacos/nacos-server 
+
+
+
+

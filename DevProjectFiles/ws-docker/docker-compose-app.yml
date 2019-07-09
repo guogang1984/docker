@@ -3,10 +3,31 @@
 # APP_CONTAINER_NAME=dac-cuiyu-spray, APP_PORTS=35555:18888, APP_NETWORKS=topflames-net
 # APP_JAR_NAME=cuiyu-spray-dac-0.0.1-SNAPSHOT.jar
 # --------------------------------------------------------
+# --------------------------------------------------------
+#
+# 
+# docker run \
+#   --hostname app01 \
+#   --name app1 \
+#   --restart=unless-stopped  \
+#   -e TZ='Asia/Shanghai' \
+#   -p 8089:8080 \
+#   --link db-mysql:mysql \
+#   -v ~/DevProjectFiles/ws-root/:/DevProjectFiles/ws-root/ \
+#   -v ~/tmp/logs/app1:/tmp/logs \
+#   -v ~/tmp/logs/app1:/tmp/java \
+#   -v ~/tmp/logs/app1:/logs \
+#   --privileged \
+#   --net=topflames-net \
+#   -d guogang1984/alpine-tomcat \
+#   java $JAVA_OPTS  -jar /DevProjectFiles/ws-root/mall/mall-admin-1.0-SNAPSHOT.jar --spring.profiles.active=prod
+#
+# docker stop app1 && docker rm app1
+# --------------------------------------------------------
 version: "2"
 services:
   dac:
-    image: 'registry.cn-shenzhen.aliyuncs.com/topflames/java:jdk8tomcat7'
+    image: 'guogang1984/alpine-tomcat'
     container_name: dac-cuiyu-spray
     restart: unless-stopped
     environment:

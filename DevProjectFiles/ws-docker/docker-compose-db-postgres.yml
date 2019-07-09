@@ -1,0 +1,35 @@
+# --------------------------------------------------------
+# docker run \
+#   --hostname postgres \
+#   --name db-postgres \
+#   --restart=unless-stopped  \
+#   -e POSTGRES_USER='odoo' \
+#   -e POSTGRES_PASSWORD='odoo' \
+#   -e POSTGRES_DB='postgres' \
+#   -p 5432:5432 \
+#   -v /etc/localtime:/etc/localtime:ro \
+#   -v ~/DevProjectFiles/ws-data/postgres:/data \
+#   --privileged \
+#   --net=topflames-net \
+#   -d postgres:10
+#
+#   docker run -d -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=odoo -e POSTGRES_DB=postgres --name db postgres:10
+#   docker run -p 8069:8069 --name odoo --link db-postgres:db --privileged --net=topflames-net  -d odoo
+# --------------------------------------------------------
+version: "2"
+services:
+  mongo:
+    image: 'postgres:10'
+    container_name: db-postgres
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ~/DevProjectFiles/ws-data/postgres:/data
+    networks:
+      - topflames-net
+networks:
+  topflames-net:
+    external:
+      name: topflames-net

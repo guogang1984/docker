@@ -1,6 +1,7 @@
 #!/bin/sh
-
+# params DOCKER_PROJ_WEB_NAME 
 [ -z "$DOCKER_PROJ_WEB_NAME" ] && echo -e "please echo \"export DOCKER_PROJ_WEB_NAME=xxxx\" >> .bash_profile && source .bash_profile " && exit 1
+# params DOCKER_PROJ_WEB_NAME 
 
 # -----------------------------------------------------------------------------
 DOCKER_FILE_WEB1=~/DevProjectFiles/ws-docker/docker-compose-web1.yml
@@ -30,11 +31,11 @@ DOCKER_FILE_WEB_DEV2=~/DevProjectFiles/ws-docker/docker-compose-web-dev2.yml
 # defined PROJ_CONF_RSYNC
 # -----------------------------------------------------------------------------
 [ -z "$PROJ_CONF_RSYNC" ] && PROJ_CONF_RSYNC=${PROJ_FOLDER}/ws-conf/rsync
-[ ! -f "$PROJ_CONF_RSYNC/downloadUser.pas" ]  && `mkdir -p $PROJ_CONF_RSYNC && echo "1234.abcd" > $PROJ_CONF_RSYNC/downloadUser.pas && chmod 700 $PROJ_CONF_RSYNC/downloadUser.pas`
-[ ! -f "$PROJ_CONF_RSYNC/exclude.list" ]  && `mkdir -p $PROJ_CONF_RSYNC && echo -e "*/application.properties \n */cygdrive" > $PROJ_CONF_RSYNC/exclude.list && chmod 700 $PROJ_CONF_RSYNC/exclude.list`
+[ -f "$PROJ_CONF_RSYNC/downloadUser.pas" ]  && `chmod 700 $PROJ_CONF_RSYNC/downloadUser.pas`
+[ -f "$PROJ_CONF_RSYNC/exclude.list" ]  && `chmod 700 $PROJ_CONF_RSYNC/exclude.list`
 # defined REMOTE_FOLDER REMOTE_PWD_FILE EXCLUDE_FILE
-REMOTE_RELEASE_FOLDER=rsync://downloadUser@120.24.208.166:873/release
-REMOTE_SNAPSHOT_FOLDER=rsync://downloadUser@120.24.208.166:873/snapshot
+REMOTE_RELEASE_FOLDER=rsync://downloadUser@release.topflames.com:873/release
+REMOTE_SNAPSHOT_FOLDER=rsync://downloadUser@release.topflames.com:873/snapshot
 REMOTE_PWD_FILE=$PROJ_CONF_RSYNC/downloadUser.pas
 EXCLUDE_FILE=$PROJ_CONF_RSYNC/exclude.list
 # defined RSYNC_OPTS
@@ -63,7 +64,6 @@ RSYNC_REMOTE_OPTS="--no-iconv -avzP --progress --delete --password-file=${REMOTE
 
 [ ! -d "~/tmp/logs/web-dev1/tmp" ] && mkdir -p ~/tmp/logs/web-dev1/tmp
 [ ! -d "~/tmp/logs/web-dev2/tmp" ] && mkdir -p ~/tmp/logs/web-dev2/tmp
-
 
 # -----------------------------------------------------------------------------
 
@@ -94,11 +94,13 @@ elif [ "$1" = "sync" ]; then
       DIST_FOLDER=${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/
       rsync ${RSYNC_OPTS} ${SOURCE_FOLDER} ${DIST_FOLDER}
       cp ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.docker.properties ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.properties            
+      cp ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/redis.docker.properties ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/redis.properties            
     else
       SOURCE_FOLDER=${PROJ_RELEASE}/${DOCKER_PROJ_WEB_NAME}/target/${DOCKER_PROJ_WEB_NAME}-1.0-SNAPSHOT/
       DIST_FOLDER=${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/
       rsync ${RSYNC_OPTS} ${SOURCE_FOLDER} ${DIST_FOLDER}
       cp ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.docker.properties ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.properties      
+      cp ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/redis.docker.properties ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/redis.properties      
     fi 
     echo "  "
     echo "rsync ${SOURCE_FOLDER} ${DIST_FOLDER} success!"
@@ -108,14 +110,31 @@ elif [ "$1" = "sync" ]; then
       DIST_FOLDER=${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/
       rsync ${RSYNC_OPTS} ${SOURCE_FOLDER} ${DIST_FOLDER}
       cp ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.dev.docker.properties ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.properties
+      cp ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/redis.dev.docker.properties ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/redis.properties 
     else
       SOURCE_FOLDER=${PROJ_RELEASE}/${DOCKER_PROJ_WEB_NAME}-dev/target/${DOCKER_PROJ_WEB_NAME}-1.0-SNAPSHOT/
       DIST_FOLDER=${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/
       rsync ${RSYNC_OPTS} ${SOURCE_FOLDER} ${DIST_FOLDER}
       cp ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.dev.docker.properties ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/application.properties
+      cp ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/redis.dev.docker.properties ${PROJ_ROOT}/${DOCKER_PROJ_WEB_NAME}-$1/WEB-INF/classes/redis.properties
     fi 
     echo "  "
     echo "rsync ${SOURCE_FOLDER} ${DIST_FOLDER} success!"
+  elif [ "$1" = "ui" ];  then
+    # web rsync ui src target
+    if [  ! -z "$2" ] && [  ! -z "$3" ];  then
+      SOURCE_FOLDER=${PROJ_RELEASE}/$2/target/
+      DIST_FOLDER=${PROJ_ROOT}/www/$3/
+      echo "rsync ${RSYNC_OPTS} ${SOURCE_FOLDER} ${DIST_FOLDER}"
+      rsync ${RSYNC_OPTS} ${SOURCE_FOLDER} ${DIST_FOLDER}
+    elif [ ! -z "$2" ]; then
+      SOURCE_FOLDER=${PROJ_RELEASE}/$2/target/
+      DIST_FOLDER=${PROJ_ROOT}/www/$2/
+      echo "rsync ${RSYNC_OPTS} ${SOURCE_FOLDER} ${DIST_FOLDER}"
+      rsync ${RSYNC_OPTS} ${SOURCE_FOLDER} ${DIST_FOLDER}
+    else
+      echo ""
+    fi 
   else
     echo "sync [1|2|dev-1|dev-2] ?"
   fi
@@ -155,7 +174,7 @@ else
   echo "commands:"     
   echo "  status                              Web Status is checked every 5 seconds,  Interrupt Ctrl + C"
   echo "  pull                                Pull Web ${DOCKER_PROJ_WEB_NAME} binary code From 120.24.*.*"
-  echo "  sync  [1|2|dev-1|dev-2]             Sync Web binary code to ws-root"
+  echo "  sync  [1|2|dev-1|dev-2] [projName]? Sync Web binary code to ws-root"
   echo "  start [1|2|dev-1|dev-2]             Web Start, waiting up to 5 seconds for the process to end"
   echo "  stop  [1|2|dev-1|dev-2]             Web Stop , waiting up to 5 seconds for the process to end"
   exit 1

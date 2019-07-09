@@ -1,0 +1,40 @@
+
+# --------------------------------------------------------
+# mkdir -p ~/DevProjectFiles/ws-data/oracle
+# docker exec -it oracleinanutshell/oracle-xe-11g /bin/bash cp /u01/app/oracle
+# 拷贝
+# docker cp b7ab8e7e6546:/u01/app/oracle ~/DevProjectFiles/ws-data/
+# docker run \
+#   --hostname oracle \
+#   --name db-oracle11g \
+#   --restart=unless-stopped  \
+#   -e ORACLE_ALLOW_REMOTE=true \
+#   -e ORACLE_DISABLE_ASYNCH_IO=true \
+#   -p 1521:1521 \
+#   -v /etc/localtime:/etc/localtime:ro \
+#   -v ~/DevProjectFiles/ws-data/oracle:/u01/app/oracle \
+#   --privileged \
+#   --net=topflames-net \
+#   -d oracleinanutshell/oracle-xe-11g
+#
+# --------------------------------------------------------
+# 
+# --------------------------------------------------------
+
+version: "2"
+services:
+  oracle:
+    image: sath89/oracle-xe-11g
+    container_name: db-oracle11g
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:1521:1521'
+      - '127.0.0.1:28080:8080'
+    volumes:
+      - ~/DevProjectFiles/ws-data/oracle:/u01/app/oracle
+    networks:
+      - topflames-net
+networks:
+  topflames-net:
+    external:
+      name: topflames-net

@@ -1,7 +1,33 @@
+# --------------------------------------------------------
+#
+# 
+# docker run \
+#   --hostname tomcat02 \
+#   --name web2 \
+#   --restart=unless-stopped  \
+#   -e TZ='Asia/Shanghai' \
+#   -e CATALINA_TMPDIR='/tmp/java/tmp' \
+#   -e JAVA_OPTS=' -Djava.io.tmpdir=/tmp/java/tmp -Djava.security.egd=file:/dev/./urandom -Duser.timezone=GMT+08 -server -Xms1024m -Xmx2048m -XX:PermSize=256m -XX:MaxPermSize=512m ' \
+#   -p 127.0.0.1:18082:8080 \
+#   --link db-mysql:mysql \
+#   --link db-redis3-1:redis \
+#   -v ~/DevProjectFiles/ws-conf/tomcat7/context.xml.redis.docker:/opt/tomcat/conf/context.xml \
+#   -v ~/DevProjectFiles/ws-conf/tomcat7/localhost18082:/opt/tomcat/conf/Catalina/localhost \
+#   -v ~/DevProjectFiles/ws-root/:/DevProjectFiles/ws-root/ \
+#   -v ~/tmp/logs/web2:/tmp/logs \
+#   -v ~/tmp/logs/web2:/tmp/java \
+#   -v ~/tmp/logs/web2:/logs \
+#   --privileged \
+#   --net=topflames-net \
+#   -d guogang1984/alpine-tomcat:jdk8tomcat7 \
+#   /opt/tomcat/bin/catalina.sh run
+#
+# docker stop web2 && docker rm web2
+# --------------------------------------------------------
 version: "2"
 services:
   tomcat02:
-    image: 'registry.cn-shenzhen.aliyuncs.com/topflames/java:jdk8tomcat7'
+    image: 'guogang1984/alpine-tomcat:jdk8tomcat7'
     container_name: web2
     restart: unless-stopped
     environment:

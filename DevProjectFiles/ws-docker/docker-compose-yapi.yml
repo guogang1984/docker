@@ -1,0 +1,67 @@
+# --------------------------------------------------------
+#
+# 
+# docker run \
+#   --name yapi \
+#   --restart=unless-stopped  \
+#   -e TZ='Asia/Shanghai' \
+#   -p 3000:3000 \
+#   --link db-mongo:mongo \
+#   -v /etc/localtime:/etc/localtime:ro \
+#   -v ~/DevProjectFiles/ws-conf/yapi/config.json:/my-yapi/config.json:ro \
+#   -v ~/DevProjectFiles/ws-data/yapi:/my-yapi \
+#   --privileged \
+#   --net=topflames-net \
+#   --entrypoint="yapi" \
+#   fiochen227/yapi \
+#   install -v v1.5.6
+#   
+# docker run \
+#   --name yapi \
+#   --restart=unless-stopped  \
+#   -e TZ='Asia/Shanghai' \
+#   -p 3000:3000 \
+#   --link db-mongo:mongo \
+#   -v /etc/localtime:/etc/localtime:ro \
+#   -v ~/DevProjectFiles/ws-conf/yapi/config.json:/my-yapi/config.json:ro \
+#   -v ~/DevProjectFiles/ws-data/yapi:/my-yapi \
+#   --privileged \
+#   --net=topflames-net \
+#   --entrypoint="yapi" \
+#   fiochen227/yapi \
+#   update
+#
+# docker run \
+#   --name yapi \
+#   --restart=unless-stopped  \
+#   -e TZ='Asia/Shanghai' \
+#   -p 3000:3000 \
+#   --link db-mongo:mongo \
+#   -v /etc/localtime:/etc/localtime:ro \
+#   -v ~/DevProjectFiles/ws-conf/yapi/config.json:/my-yapi/config.json:ro \
+#   -v ~/DevProjectFiles/ws-data/yapi:/my-yapi \
+#   --privileged \
+#   --net=topflames-net \
+#   -d fiochen227/yapi 
+#
+# --------------------------------------------------------
+
+version: "2"
+services:
+  yapi:
+    image: 'fiochen227/yapi'
+    container_name: yapi
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:3000:3000'
+    external_links:
+      - db-mongo:mongo
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ~/DevProjectFiles/ws-data/yapi:/api/vendors
+    networks:
+      - topflames-net
+networks:
+  topflames-net:
+    external:
+      name: topflames-net

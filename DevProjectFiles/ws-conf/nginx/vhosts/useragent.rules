@@ -25,12 +25,41 @@ map $http_user_agent $mobileAgent {
         ~*webOS              1;
 }
 
+map $http_user_agent $iosAgent {
+        default              0;
+        ~*iPhone             1;
+}
+
 map $http_user_agent $androidAgent {
         default              0;
         ~*Android            1;
 }
 
-map $http_user_agent $iosAgent {
+map $http_user_agent $xiaomiAgent {
         default              0;
-        ~*iPhone             1;
+        ~*MI                 1;
+}
+
+map $http_user_agent $huaweiAgent {
+        default              0;
+        ~*HUAWEI             1;
+}
+
+map $http_user_agent $oppoAgent {
+        default              0;
+        ~*OPPO               1;
+}
+
+map $http_user_agent $vivoAgent {
+        default              0;
+        ~*vivo               1;
+}
+
+map $http_user_agent otherAndroidAgent {
+        default              0;
+        ~*MI                 0;
+        ~*OPPO               0;
+        ~*vivo               0;
+        ~*HUAWEI             0;
+        ~*Android            1;  
 }

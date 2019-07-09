@@ -1,0 +1,69 @@
+##  
+##  
+##  # 注意 ~/DevProjectFiles/ws-data/nexus-data 目录的权限问题
+##  ls -l ~/DevProjectFiles/ws-data/
+##  sudo chown dev:dev -R ~/DevProjectFiles/ws-data/nexus-data
+##  sudo chmod 777 -R ~/DevProjectFiles/ws-data/nexus-data
+##  # 启动
+##  docker run -p 8081:8081 --name nexus -v ~/DevProjectFiles/ws-data/nexus-data:/sonatype-work sonatype/nexus
+##  # 默认管理员密码 admin admin123
+##  #（1）增加一个Proxy Repository，id，name随便写，库地址就写
+##  http://maven.aliyun.com/nexus/content/groups/public/
+##  #（2）然后到Ordered Group Repositories这里把这个新加的库弄到左边。
+##  再拖拽到Central库的上面，优先走阿里云的库，快啊~~
+##  #（3）保存即可。
+##  
+##  # 私服Nexus搭建完毕之后,由于网络原因,有时候会出现索引更新不了的问题,这里参考了网上众多资料,给出一种离线更新索引的方式。
+##  
+##  访问http://repo.maven.apache.org/maven2/.index/下载中心仓库最新版本的索引文件，在一长串列表中，我们需要下载如下两个文件（一般在列表的末尾位置）
+##  
+##  nexus-maven-repository-index.gz
+##  
+##  nexus-maven-repository-index.properties
+##  
+##  curl -jksSLH "Cookie: oraclelicense=accept-securebackup-cookie" -o /tmp/unlimited_jce_policy.zip "%JCE_URL%"
+##  
+##  # curl -jksSLH "Cookie: oraclelicense=accept-securebackup-cookie" -o ~/Downloads/nexus-maven-repository-index.gz "http://repo.maven.apache.org/maven2/.index/nexus-maven-repository-index.gz"
+##  
+##  # curl -jksSLH "Cookie: oraclelicense=accept-securebackup-cookie" -o ~/Downloads/nexus-maven-repository-index.properties "http://repo.maven.apache.org/maven2/.index/nexus-maven-repository-index.properties"
+##  
+##  scp -r ~/Downloads/indexer/* root@192.168.188.188:/home/dev/DevProjectFiles/ws-data/nexus-data/indexer/central-ctx
+##  
+##  
+##  sudo chown -R 200:200 /home/dev/DevProjectFiles/ws-data/nexus-data/indexer/central-ctx/
+##  
+##  sudo chmod 755 -R /home/dev/DevProjectFiles/ws-data/nexus-data/indexer/central-ctx/
+##  
+##  下载完成之后最好是通过md5或者sha1校验一下文件是否一致，因为服务器并不在国内，网络传输可能会造成文件损坏
+##  
+##  下面就是解压这个索引文件，虽然后缀名为gz，但解压方式却比较特别，我们需要下载一个jar包indexer-cli-5.1.1.jar，我们需要通过这个特殊的jar来解压这个索引文件
+##  
+##  注：indexer-cli-5.1.1.jar是专门用来解析和发布索引的工具，关于它的详细信息请见这里。前往maven中央仓库下载indexer-cli-5.1.1.jar
+##  
+##  将上面三个文件（.gz & .properties & .jar）放置到同一目录下，运行如下命令
+##  
+##  
+##  java -jar indexer-cli-5.1.1.jar -u nexus-maven-repository-index.gz -d indexer  
+##  等待程序运行完成之后可以发现indexer文件夹下出现了很多文件，将这些文件放置到{nexus-home}/sonatype-work/nexus/indexer/central-ctx目录下，重新启动nexus
+##  ./nexus restart  
+##  
+version: "2"
+services:
+  tomcat01:
+    image: 'sonatype/nexus'
+    container_name: nexus2
+    restart: unless-stopped
+    environment:
+      TZ: 'Asia/Shanghai'
+      CATALINA_TMPDIR : '/tmp/java/tmp'
+      JAVA_OPTS : ' -Djava.io.tmpdir=/tmp/java/tmp -Djava.security.egd=file:/dev/./urandom -Duser.timezone=GMT+08 -server -Xms1024m -Xmx2048m -XX:PermSize=256m -XX:MaxPermSize=512m '
+    ports:
+      - '58081:8081'
+    volumes:
+      - ~/DevProjectFiles/ws-data/nexus-data/:/sonatype-work
+    networks:
+      - topflames-net
+networks:
+  topflames-net:
+    external:
+      name: topflames-net
