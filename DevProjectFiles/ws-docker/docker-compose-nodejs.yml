@@ -15,8 +15,8 @@ services:
 #    command: [ "sh", "-c", "npm --registry https://registry.npm.taobao.org install && npm run build && npm run start" ]
     command: [ "sh", "-c", "npm install && npm run build && npm run start" ]
     networks:
-      - topflames-net
+      - app-net
 networks:
-  topflames-net:
+  app-net:
     external:
-      name: topflames-net
+      name: app-net

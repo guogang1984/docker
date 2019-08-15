@@ -11,14 +11,14 @@
 #   -v ~/tmp/logs/nginx:/usr/local/openresty/nginx/logs \
 #   --privileged \
 #   --net=host \
-#   -d guogang1984/alpine-openresty:alpine-fat
+#   -d g127/nginx
 #
 # docker stop web-nginx && docker rm  web-nginx
 ###
 version: "2"
 services:
   nginx:
-    image: guogang1984/alpine-openresty:alpine-fat
+    image: g127/nginx
     container_name: web-nginx
     restart: unless-stopped
     #ports:

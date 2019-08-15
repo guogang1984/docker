@@ -11,7 +11,7 @@ TPL=${GG_APP_TPL:=docker-compose-app.yml.tpl} && \
 # INPUT APP_NAME, APP_JAR_NAME, APP_PORTS, APP_NETWORKS
 APP_CONTAINER_NAME=${GG_APP_CONTAINER_NAME:="dac-cuiyu-spray"} && \
   APP_PORTS=${GG_APP_PORTS:="35555:18888"} && \
-  APP_NETWORKS=${GG_APP_NETWORKS:="topflames-net"} && \
+  APP_NETWORKS=${GG_APP_NETWORKS:="app-net"} && \
     APP_JAR_NAME=${GG_APP_JAR_NAME:="cuiyu-spray-dac-0.0.1-SNAPSHOT.jar"}
 
 # Backup Exist $OUT_FILE

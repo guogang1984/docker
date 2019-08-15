@@ -18,8 +18,8 @@
 #   -v ~/tmp/logs/web2:/tmp/java \
 #   -v ~/tmp/logs/web2:/logs \
 #   --privileged \
-#   --net=topflames-net \
-#   -d guogang1984/alpine-tomcat:jdk8tomcat7 \
+#   --net=app-net \
+#   -d g127/java \
 #   /opt/tomcat/bin/catalina.sh run
 #
 # docker stop web2 && docker rm web2
@@ -27,7 +27,7 @@
 version: "2"
 services:
   tomcat02:
-    image: 'guogang1984/alpine-tomcat:jdk8tomcat7'
+    image: 'g127/java'
     container_name: web2
     restart: unless-stopped
     environment:
@@ -48,8 +48,8 @@ services:
       - ~/tmp/logs/web2:/logs
     command: "/opt/tomcat/bin/catalina.sh run"
     networks:
-      - topflames-net
+      - app-net
 networks:
-  topflames-net:
+  app-net:
     external:
-      name: topflames-net
+      name: app-net

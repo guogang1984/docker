@@ -6,7 +6,7 @@
 #   -v ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro \
 #   -v ~/DevProjectFiles/ws-data/redis3-2:/data \
 #   --privileged \
-#   --net=topflames-net \
+#   --net=app-net \
 #   -d redis:3.2.12-alpine
 #
 version: "2"
@@ -21,8 +21,8 @@ services:
       - ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro
       - ~/DevProjectFiles/ws-data/redis3-2:/data
     networks:
-      - topflames-net
+      - app-net
 networks:
-  topflames-net:
+  app-net:
     external:
-      name: topflames-net
+      name: app-net

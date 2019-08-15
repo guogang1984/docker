@@ -11,7 +11,7 @@
 #   -v ~/DevProjectFiles/ws-conf/yapi/config.json:/my-yapi/config.json:ro \
 #   -v ~/DevProjectFiles/ws-data/yapi:/my-yapi \
 #   --privileged \
-#   --net=topflames-net \
+#   --net=app-net \
 #   --entrypoint="yapi" \
 #   fiochen227/yapi \
 #   install -v v1.5.6
@@ -26,7 +26,7 @@
 #   -v ~/DevProjectFiles/ws-conf/yapi/config.json:/my-yapi/config.json:ro \
 #   -v ~/DevProjectFiles/ws-data/yapi:/my-yapi \
 #   --privileged \
-#   --net=topflames-net \
+#   --net=app-net \
 #   --entrypoint="yapi" \
 #   fiochen227/yapi \
 #   update
@@ -41,7 +41,7 @@
 #   -v ~/DevProjectFiles/ws-conf/yapi/config.json:/my-yapi/config.json:ro \
 #   -v ~/DevProjectFiles/ws-data/yapi:/my-yapi \
 #   --privileged \
-#   --net=topflames-net \
+#   --net=app-net \
 #   -d fiochen227/yapi 
 #
 # --------------------------------------------------------
@@ -60,8 +60,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ~/DevProjectFiles/ws-data/yapi:/api/vendors
     networks:
-      - topflames-net
+      - app-net
 networks:
-  topflames-net:
+  app-net:
     external:
-      name: topflames-net
+      name: app-net

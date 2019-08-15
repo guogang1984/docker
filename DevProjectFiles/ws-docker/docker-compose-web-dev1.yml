@@ -17,14 +17,14 @@
 #   -v ~/tmp/logs/web-dev1:/tmp/java \
 #   -v ~/tmp/logs/web-dev1:/logs \
 #   --privileged \
-#   --net=topflames-net \
-#   -d guogang1984/alpine-tomcat:jdk8tomcat7 \
+#   --net=app-net \
+#   -d g127/java \
 #   /opt/tomcat/bin/catalina.sh run
 # --------------------------------------------------------
 version: "2"
 services:
   tomcat-dev01:
-    image: 'guogang1984/alpine-tomcat:jdk8tomcat7'
+    image: 'g127/java'
     container_name: web-dev1
     restart: unless-stopped
     environment:
@@ -45,8 +45,8 @@ services:
       - ~/tmp/logs/web-dev1:/logs
     command: "/opt/tomcat/bin/catalina.sh run"
     networks:
-      - topflames-net
+      - app-net
 networks:
-  topflames-net:
+  app-net:
     external:
-      name: topflames-net
+      name: app-net

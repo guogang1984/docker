@@ -5,17 +5,17 @@
 #
 # docker run \
 #   --user root \
-#   --hostname jenkins \
-#   --name jenkins \
+#   --hostname ci.topflames.com \
+#   --name jenkins-ci \
+#   --restart=unless-stopped  \
 #   -e TZ='Asia/Shanghai' \
-#   -p 9000:8080 \
+#   -p 8080:8080 \
 #   -p 50000:50000 \
 #   --link gitlab:dev.topflames.com \
 #   -v ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro  \
 #   -v ~/DevProjectFiles/ws-conf/jenkins:/var/jenkins_home \
 #   --privileged \
-#   --net=topflames-net \
-#   --rm \
+#   --net=app-net \
 #   -d jenkins/jenkins:lts-alpine
 #
 # docker stop jenkins && docker rm  -fv jenkins
@@ -26,6 +26,7 @@ services:
   jenkins:
     image: 'jenkins/jenkins:lts-alpine'
     container_name: jenkins
+    hostname: 'ci.topflames.com'
     restart: unless-stopped
     environment:
       TZ: 'Asia/Shanghai'
@@ -35,13 +36,13 @@ services:
       #- /bin/docker:/usr/bin/docker
       #- /var/run/docker.sock:/var/run/docker.sock
     ports:
-      - "9000:8080"
+      - "8080:8080"
       - "50000:50000"
     external_links:
         - gitlab:dev.topflames.com
     networks:
-      - topflames-net
+      - app-net
 networks:
-  topflames-net:
+  app-net:
     external:
-      name: topflames-net
+      name: app-net

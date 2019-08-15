@@ -6,7 +6,7 @@
 #   -v ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro \
 #   -v ~/DevProjectFiles/ws-data/redis3-1:/data \
 #   --privileged \
-#   --net=topflames-net \
+#   --net=app-net \
 #   -d redis:3.2.12-alpine
 #
 # docker stop db-redis3-1 && docker rm  db-redis3-1
@@ -22,8 +22,8 @@ services:
       - ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro
       - ~/DevProjectFiles/ws-data/redis3-1:/data
     networks:
-      - topflames-net
+      - app-net
 networks:
-  topflames-net:
+  app-net:
     external:
-      name: topflames-net
+      name: app-net

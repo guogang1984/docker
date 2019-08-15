@@ -7,7 +7,7 @@
 #   -v /etc/localtime:/etc/localtime:ro \
 #   -v ~/DevProjectFiles/ws-data/mongo:/data \
 #   --privileged \
-#   --net=topflames-net \
+#   --net=app-net \
 #   -d mongo:3.4
 # --------------------------------------------------------
 version: "2"
@@ -22,8 +22,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ~/DevProjectFiles/ws-data/mongo:/data
     networks:
-      - topflames-net
+      - app-net
 networks:
-  topflames-net:
+  app-net:
     external:
-      name: topflames-net
+      name: app-net

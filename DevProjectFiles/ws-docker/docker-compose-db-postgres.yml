@@ -10,11 +10,11 @@
 #   -v /etc/localtime:/etc/localtime:ro \
 #   -v ~/DevProjectFiles/ws-data/postgres:/data \
 #   --privileged \
-#   --net=topflames-net \
+#   --net=app-net \
 #   -d postgres:10
 #
 #   docker run -d -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=odoo -e POSTGRES_DB=postgres --name db postgres:10
-#   docker run -p 8069:8069 --name odoo --link db-postgres:db --privileged --net=topflames-net  -d odoo
+#   docker run -p 8069:8069 --name odoo --link db-postgres:db --privileged --net=app-net  -d odoo
 # --------------------------------------------------------
 version: "2"
 services:
@@ -28,8 +28,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ~/DevProjectFiles/ws-data/postgres:/data
     networks:
-      - topflames-net
+      - app-net
 networks:
-  topflames-net:
+  app-net:
     external:
-      name: topflames-net
+      name: app-net

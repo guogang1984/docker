@@ -52,18 +52,19 @@ services:
   tomcat01:
     image: 'sonatype/nexus'
     container_name: nexus2
+    hostname: 'nexus.topflames.com'
     restart: unless-stopped
     environment:
       TZ: 'Asia/Shanghai'
       CATALINA_TMPDIR : '/tmp/java/tmp'
-      JAVA_OPTS : ' -Djava.io.tmpdir=/tmp/java/tmp -Djava.security.egd=file:/dev/./urandom -Duser.timezone=GMT+08 -server -Xms1024m -Xmx2048m -XX:PermSize=256m -XX:MaxPermSize=512m '
+      JAVA_OPTS : ' -Djava.io.tmpdir=/tmp/java/tmp -Djava.security.egd=file:/dev/./urandom -Duser.timezone=GMT+08 '
     ports:
       - '58081:8081'
     volumes:
       - ~/DevProjectFiles/ws-data/nexus-data/:/sonatype-work
     networks:
-      - topflames-net
+      - app-net
 networks:
-  topflames-net:
+  app-net:
     external:
-      name: topflames-net
+      name: app-net

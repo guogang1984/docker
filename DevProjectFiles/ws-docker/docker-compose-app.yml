@@ -1,6 +1,6 @@
 # --------------------------------------------------------
 # Generating docker compose file at 20171027163438
-# APP_CONTAINER_NAME=dac-cuiyu-spray, APP_PORTS=35555:18888, APP_NETWORKS=topflames-net
+# APP_CONTAINER_NAME=dac-cuiyu-spray, APP_PORTS=35555:18888, APP_NETWORKS=app-net
 # APP_JAR_NAME=cuiyu-spray-dac-0.0.1-SNAPSHOT.jar
 # --------------------------------------------------------
 # --------------------------------------------------------
@@ -11,6 +11,7 @@
 #   --name app1 \
 #   --restart=unless-stopped  \
 #   -e TZ='Asia/Shanghai' \
+#   -e SPRING_PROFILE=prod \
 #   -p 8089:8080 \
 #   --link db-mysql:mysql \
 #   -v ~/DevProjectFiles/ws-root/:/DevProjectFiles/ws-root/ \
@@ -18,16 +19,20 @@
 #   -v ~/tmp/logs/app1:/tmp/java \
 #   -v ~/tmp/logs/app1:/logs \
 #   --privileged \
-#   --net=topflames-net \
-#   -d guogang1984/alpine-tomcat \
+#   --net=app-net \
+#   -d g127/java \
 #   java $JAVA_OPTS  -jar /DevProjectFiles/ws-root/mall/mall-admin-1.0-SNAPSHOT.jar --spring.profiles.active=prod
 #
 # docker stop app1 && docker rm app1
+# 
+# docker run -it --rm -e SPRING_PROFILE="prod" marco/mall-admin
+
+
 # --------------------------------------------------------
 version: "2"
 services:
   dac:
-    image: 'guogang1984/alpine-tomcat'
+    image: 'g127/java'
     container_name: dac-cuiyu-spray
     restart: unless-stopped
     environment:
@@ -44,8 +49,8 @@ services:
       - ~/tmp/logs/dac:/tmp/logs
     command: [  "java", "-Djava.security.egd=file:/dev/./urandom", "-Duser.timezone=GMT+08", "-jar","/DevProjectFiles/ws-root/dac-cuiyu-spray/cuiyu-spray-dac-0.0.1-SNAPSHOT.jar", "--spring.profiles.active=dev", "--spring.config.location=/DevProjectFiles/ws-root/dac-cuiyu-spray/application.properties"  ]
     networks:
-      - topflames-net
+      - app-net
 networks:
-  topflames-net:
+  app-net:
     external:
-      name: topflames-net
+      name: app-net
