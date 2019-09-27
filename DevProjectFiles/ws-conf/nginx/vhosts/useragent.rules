@@ -55,7 +55,7 @@ map $http_user_agent $vivoAgent {
         ~*vivo               1;
 }
 
-map $http_user_agent otherAndroidAgent {
+map $http_user_agent $otherAndroidAgent {
         default              0;
         ~*MI                 0;
         ~*OPPO               0;
