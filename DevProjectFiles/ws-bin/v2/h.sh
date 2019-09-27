@@ -197,7 +197,15 @@ function startOrStopNginx() {
     #
     docker-compose -f ~/DevProjectFiles/ws-docker/docker-compose-nginx.yml up -d
 
+    docker exec -it web-nginx chmod -R 755 /usr/local/share/GeoIP/
+
+    docker exec -it web-nginx ls -l /usr/local/share/GeoIP/
+
+    docker exec -it web-nginx nginx -V 
+
     docker exec -it web-nginx nginx -s reload
+
+    docker exec -it web-nginx ls -l /usr/local/openresty/nginx/modules
 }
 
 function pullPorject() {
