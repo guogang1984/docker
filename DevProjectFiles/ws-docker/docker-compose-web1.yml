@@ -11,8 +11,8 @@
 #   -p 127.0.0.1:18081:8080 \
 #   --link db-mysql:mysql \
 #   --link db-redis3-1:redis \
-#   -v ~/DevProjectFiles/ws-conf/tomcat7/context.xml.redis.docker:/opt/tomcat/conf/context.xml \
-#   -v ~/DevProjectFiles/ws-conf/tomcat7/localhost18081:/opt/tomcat/conf/Catalina/localhost \
+#   -v ~/DevProjectFiles/ws-conf/tomcat8/context.xml.redis.docker:/opt/tomcat/conf/context.xml \
+#   -v ~/DevProjectFiles/ws-conf/tomcat8/localhost18081:/opt/tomcat/conf/Catalina/localhost \
 #   -v ~/DevProjectFiles/ws-root/:/DevProjectFiles/ws-root/ \
 #   -v ~/tmp/logs/web1:/tmp/logs \
 #   -v ~/tmp/logs/web1:/tmp/java \
@@ -40,8 +40,8 @@ services:
       - db-mysql:mysql
       - db-redis3-1:redis3
     volumes:
-      - ~/DevProjectFiles/ws-conf/tomcat7/context.xml.redis.docker:/opt/tomcat/conf/context.xml
-      - ~/DevProjectFiles/ws-conf/tomcat7/localhost18081:/opt/tomcat/conf/Catalina/localhost
+      - ~/DevProjectFiles/ws-conf/tomcat8/context.xml.redis:/opt/tomcat/conf/context.xml
+      - ~/DevProjectFiles/ws-conf/tomcat8/localhost18081:/opt/tomcat/conf/Catalina/localhost
       - ~/DevProjectFiles/ws-root/:/DevProjectFiles/ws-root/
       - ~/tmp/logs/web1:/tmp/logs
       - ~/tmp/logs/web1:/tmp/java

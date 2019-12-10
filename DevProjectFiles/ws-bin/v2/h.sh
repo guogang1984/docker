@@ -31,7 +31,11 @@ function installEnv() {
     # 在控制台选择对应ECS，然后在列表右侧行操作中选择<重置实例密码>（root的密码）
     # 可选 通过界面上远程登录，首次登录获取 管理密码（远程登录密码）
     # 复制公钥，通过公钥登录  本地复制public-key  ssh-copy-id root@指定ip
+    # ssh-copy-id dev@39.100.234.208 
+    # ssh-copy-id -i  ~/.ssh/agent dev@39.100.234.208 
+    # docker exec -it jenkins-ci ssh -i /var/jenkins_home/.ssh/agent dev@121.40.224.188
     ssh-copy-id root@39.100.234.208  
+    # 增加主机信任
     # ssh登录到主机
     ssh root@39.100.234.208
     # 设置主机名  项目简称xxx-序号1-ip尾数
@@ -66,6 +70,13 @@ function installEnv() {
     # 
     fdisk -l 
     df -h
+    # dns
+    # 显示当前网络连接
+    sudo nmcli connection show
+    # 修改当前网络连接对应的DNS服务器，这里的网络连接可以用名称或者UUID来标识
+    sudo nmcli con mod eth0 ipv4.dns "114.114.114.114 8.8.8.8"
+    # 将dns配置生效
+    sudo nmcli con up eth0
     #
     # 安装一些通用软件
     sudo yum install -y wget curl dnsmasq bind-utils net-tools lrzsz rsync zip unzip nc selinux-policy*  yum-utils device-mapper-persistent-data lvm2 iptables-services kernel-devel usbutils pciutils
@@ -74,7 +85,7 @@ function installEnv() {
 # TODO 未完成，下面是命令行用法
 function installUserDev() {
     # sudo权限添加，su需要密码    
-    echo  'dev    ALL=(ALL)       ALL'  >> /etc/sudoers
+    # echo  'dev    ALL=(ALL)       ALL'  >> /etc/sudoers
     #  sudo权限添加，su不需要密码    
     echo  'dev    ALL=(ALL)       NOPASSWD:ALL'  >> /etc/sudoers
 
@@ -82,8 +93,6 @@ function installUserDev() {
     useradd dev
     # 密码 默认密码 NpSmC2gV
     passwd dev   
-    # sudo权限添加
-    echo  'dev    ALL=(ALL)       ALL'  >> /etc/sudoers
 }
 
 # TODO 未完成，下面是命令行用法
@@ -101,7 +110,7 @@ function installDocker() {
     sudo systemctl start docker && sudo systemctl enable docker && sudo systemctl status docker
     # docker执行权限分配 sudo usermod -aG docker your-user
     sudo usermod -aG docker $(whoami)
-    sudo usermod -aG docker dev
+    # sudo usermod -aG docker dev
     # 重新登录以后测试
     docker -v
 
@@ -186,13 +195,6 @@ function startOrStopDb() {
     docker-compose -f ~/DevProjectFiles/ws-docker/docker-compose-db-redis3-1.yml up -d
 }
 
-function startOrStopWeb() {
-    #
-    docker-compose -f ~/DevProjectFiles/ws-docker/docker-compose-web1.yml up -d
-    #
-    docker-compose -f ~/DevProjectFiles/ws-docker/docker-compose-web2.yml up -d
-}
-
 function startOrStopNginx() {
     #
     docker-compose -f ~/DevProjectFiles/ws-docker/docker-compose-nginx.yml up -d
@@ -206,6 +208,13 @@ function startOrStopNginx() {
     docker exec -it web-nginx nginx -s reload
 
     docker exec -it web-nginx ls -l /usr/local/openresty/nginx/modules
+}
+
+function startOrStopWeb() {
+    #
+    docker-compose -f ~/DevProjectFiles/ws-docker/docker-compose-web1.yml up -d
+    #
+    docker-compose -f ~/DevProjectFiles/ws-docker/docker-compose-web2.yml up -d
 }
 
 function pullPorject() {
@@ -259,10 +268,19 @@ function pullPorject() {
 
 
     mkdir -p  /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18081/ && \
-     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/qifa-service-1\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18081/qifa-service.xml
+     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/jyb-service-1\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18081/jyb-service.xml
 
     mkdir -p  /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18082/ && \
-     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/qifa-service-2\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18082/qifa-service.xml
+     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/jyb-service-2\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18082/jyb-service.xml
+
+
+    mkdir -p  /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28081/ && \
+     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/jyb-service-dev-1\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28081/jyb-service-dev.xml
+
+    mkdir -p  /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28082/ && \
+     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/jyb-service-dev-2\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28082/jyb-service-dev.xml
+
+
 
 tee  /home/dev/DevProjectFiles/ws-conf/tomcat8/context.xml.redis <<-'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -300,6 +318,111 @@ tee  /home/dev/DevProjectFiles/ws-conf/tomcat8/context.xml.redis <<-'EOF'
 </Context>
 EOF
 
+
+tee  /home/dev/DevProjectFiles/ws-root/jyb-service-dev-1/WEB-INF/classes/application.properties <<-'EOF'
+#--------------------------------
+# application settings
+#--------------------------------
+app.name=jyb-service-dev
+
+#--------------------------------
+# login settings
+#--------------------------------
+# login settings begin 
+app.captcha.enabled=false
+app.register.enabled=false
+app.qrCode.enabled=false
+app.qrCode.url=https://www.pgyer.com/niiH
+app.log.parent.path=/tmp/logs
+app.log.name=jyb-service-dev
+#login settings end 
+
+#--------------------------------
+# oracle database settings
+#--------------------------------
+# oracle database settings begin
+#jdbc.driver=oracle.jdbc.driver.OracleDriver
+#jdbc.url=jdbc:oracle:thin:@127.0.0.1:1521/ORCL
+#jdbc.username=JMOAXT
+#jdbc.password=JMOAXT
+#oracle database settings end
+
+#--------------------------------
+# mysql database settings
+#--------------------------------
+#mysql database settings begin
+jdbc.driver=com.mysql.jdbc.Driver
+jdbc.url=jdbc:mysql://172.16.33.91:3306/jyb-service-dev?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&nullCatalogMeansCurrent=true
+jdbc.username=root
+jdbc.password=oMqiVy#oF603UZve
+#mysql database settings end
+
+#--------------------------------
+# connection pool settings
+#--------------------------------
+#connection pool settings
+jdbc.pool.maxIdle=10
+jdbc.pool.maxActive=200
+
+#--------------------------------
+# log4jdbc driver settings
+#--------------------------------
+# log4jdbc driver settings
+#jdbc.driver=net.sf.log4jdbc.DriverSpy
+#jdbc.url=jdbc:log4jdbc:h2:file:~/.h2/auth;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+#--------------------------------
+# fileResources settings 
+#--------------------------------
+#fileResources settings begin
+uploadPath=/DevProjectFiles/ws-root/fileResources
+#fileResources settings end
+
+#--------------------------------
+# notification setting 
+#--------------------------------
+notification.push.enabled=true
+notification.appNames=tfoa
+
+#--------------------------------
+# redis settings 
+#--------------------------------
+redis.enabled=true
+redis.host=redis3
+redis.port=6379  
+#redis.pass=123456  
+redis.timeout=1000
+EOF
+
 }
 
+
+function uploadProperties() {
+    # 上传
+tee  /home/dev/DevProjectFiles/ws-root/www/console.app.com/application.properties.json <<-'EOF'
+{
+  "comment": "通用配置参数，后台接口地址",
+  "BASE_API": "http://121.40.224.188/jyb-service",
+  "NOTIFICATION_API": "http://oa.topflames.com:8880"
+}
+EOF
+
+}
+
+
+function cert() {
+  # https://github.com/Neilpang/acme.sh/wiki/%E8%AF%B4%E6%98%8E
+  # 初始化
+  curl  https://get.acme.sh | sh
+  # 验证
+  acme.sh  --issue  -d jiayoubao.hyszapp.cn  --webroot  /home/dev/DevProjectFiles/ws-root/www/www.app.com/
+
+  mkdir -p /home/dev/DevProjectFiles/ws-conf/nginx/vhosts/cert/jiayoubao.hyszapp.cn/
+  # 安装
+  acme.sh  --installcert  -d  jiayoubao.hyszapp.cn   \
+          --key-file   /home/dev/DevProjectFiles/ws-conf/nginx/vhosts/cert/jiayoubao.hyszapp.cn/jiayoubao.hyszapp.cn.key \
+          --fullchain-file /home/dev/DevProjectFiles/ws-conf/nginx/vhosts/cert/jiayoubao.hyszapp.cn/fullchain.cer \
+          --reloadcmd  "docker exec -it web-nginx nginx -s reload"
+  # 手工更新证书
+  acme.sh  --renew  -d  jiayoubao.hyszapp.cn --force
+}
 
