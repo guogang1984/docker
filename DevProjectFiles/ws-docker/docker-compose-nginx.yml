@@ -14,6 +14,7 @@
 #   -d g127/nginx
 #
 # docker stop web-nginx && docker rm  web-nginx
+# docker rm -fv web-nginx
 ###
 version: "2"
 services:
@@ -25,7 +26,7 @@ services:
     #  - '80:8080'
     volumes:
       # fixed UTC+8 localtime problem
-      - ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro
+      # - ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro
       # nginx conf default path
       - ~/DevProjectFiles/ws-conf/nginx/:/usr/local/openresty/nginx/conf/
       # nginx root  default path

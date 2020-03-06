@@ -21,7 +21,7 @@ DOCKER_DB_CMD=`echo  -e "mysqldump ${DOCKER_DB_BACK_OPTS}"`
 echo -e "export db '${DOCKER_DB_NAME}' cmd: " && echo -e "mysqldump ${DOCKER_DB_BACK_OPTS}"
 
 # docker exec
-docker exec -it ${DOCKER_DB_CID} ${DOCKER_DB_CMD} > /dev/null
+docker exec -i ${DOCKER_DB_CID} ${DOCKER_DB_CMD} > /dev/null
 
 #
 sudo gzip ~/DevProjectFiles/ws-back/${DOCKER_DB_NAME}/${DOCKER_DB_NAME}_${CUR_ALL_TIME}.sql

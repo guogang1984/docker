@@ -1,6 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
+title 杀死端口
+
 set port=%1%
 if "%port%" == "" goto inputPort
 goto runKill

@@ -38,6 +38,8 @@ function installEnv() {
     # 增加主机信任
     # ssh登录到主机
     ssh root@39.100.234.208
+    # 跳板登录
+    ssh -o "ProxyCommand ssh -p 1098 lmx@proxy.machine nc -w 1 %h %p" -p 1098 lmx@target.machine
     # 设置主机名  项目简称xxx-序号1-ip尾数
     hostnamectl set-hostname xxxapp-1-188
     
@@ -80,6 +82,9 @@ function installEnv() {
     #
     # 安装一些通用软件
     sudo yum install -y wget curl dnsmasq bind-utils net-tools lrzsz rsync zip unzip nc selinux-policy*  yum-utils device-mapper-persistent-data lvm2 iptables-services kernel-devel usbutils pciutils
+    # 安装所有32位程序需要组件的方法
+    # <!--ia32-libs.i686 //是ubuntu系列下的,而且13.10之后的ubuntu貌似也没这个了-->
+    # sudo yum install xulrunner.i686  
 }
 
 # TODO 未完成，下面是命令行用法
@@ -96,6 +101,8 @@ function installUserDev() {
 }
 
 # TODO 未完成，下面是命令行用法
+# https://github.com/docker/docker-install/blob/master/rootless-install.sh
+# http://get.daocloud.io/#install-docker
 function installDocker() {
     # step 1: 安装必要的一些系统工具
     sudo yum install -y yum-utils device-mapper-persistent-data lvm2
@@ -138,6 +145,13 @@ sudo tee /etc/docker/daemon.json <<-'EOF'
 }
 EOF
 
+sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+  "registry-mirrors": ["https://wco14yra.mirror.aliyuncs.com", "http://f1361db2.m.daocloud.io", "https://7hn9mjqg.mirror.aliyuncs.com"]
+}
+EOF
+
+
     # 重启docker生效
     sudo systemctl enable docker && sudo systemctl daemon-reload && sudo systemctl restart docker && sudo systemctl status docker
     # 重新登录以后测试
@@ -162,6 +176,20 @@ function pullImages() {
     docker pull node:alpine
 
 
+    # 如果网络不好，使用save 和 load
+    sudo docker save -o g127-java.tar  g127/java
+    sudo docker save -o g127-nginx.tar g127/nginx
+    sudo docker save -o g127-redis.tar redis:3.2.12-alpine
+    sudo docker save -o g127-mysql.tar mysql:5.7
+
+    scp  -P 11433 *.tar dev@58.218.126.33:~/ 
+    scp /Users/gg/DevProjectFiles/ws-my-github/docctFiles.zip dev@111.67.193.151:~/
+
+    sudo docker load -i g127-java.tar 
+    sudo docker load -i g127-nginx.tar 
+    sudo docker load -i g127-redis.tar 
+    sudo docker load -i g127-mysql.tar 
+
     # 在docker容器中运行 相关命令 查询 jdk版本和tomcat版本
     docker run -it --rm g127/java catalina.sh version
     # 
@@ -183,7 +211,7 @@ function createDockerNetwork() {
 function uploadConfigure() {
     # 上传
     scp /Users/gg/DevProjectFiles/ws-my-github/docctFiles.zip dev@111.67.193.151:~/
-
+    scp /Users/gg/Downloads/docker-output.zip dev@111.67.193.151:~/
     unzip DevProjectFiles.zip && rm -rf __* && rm -rf *.zip
 
 }
@@ -225,13 +253,25 @@ function pullPorject() {
     rsync --no-iconv -avzP --progress --delete \
           --password-file=/home/dev/DevProjectFiles/ws-conf/rsync/downloadUser.pas \
           --exclude-from=/home/dev/DevProjectFiles/ws-conf/rsync/exclude.list \
-          rsync://downloadUser@release.topflames.com:873/release/qifa-service \
+          rsync://downloadUser@release.topflames.com:873/release/fileResources \
           /home/dev/DevProjectFiles/ws-release/
 
     rsync --no-iconv -avzP --progress --delete \
           --password-file=/home/dev/DevProjectFiles/ws-conf/rsync/downloadUser.pas \
           --exclude-from=/home/dev/DevProjectFiles/ws-conf/rsync/exclude.list \
-          rsync://downloadUser@release.topflames.com:873/release/qifa-console \
+          rsync://downloadUser@release.topflames.com:873/release/yyfb-service \
+          /home/dev/DevProjectFiles/ws-release/
+
+    rsync --no-iconv -avzP --progress --delete \
+          --password-file=/home/dev/DevProjectFiles/ws-conf/rsync/downloadUser.pas \
+          --exclude-from=/home/dev/DevProjectFiles/ws-conf/rsync/exclude.list \
+          rsync://downloadUser@release.topflames.com:873/release/yyfb-console-web \
+          /home/dev/DevProjectFiles/ws-release/ 
+
+    rsync --no-iconv -avzP --progress --delete \
+          --password-file=/home/dev/DevProjectFiles/ws-conf/rsync/downloadUser.pas \
+          --exclude-from=/home/dev/DevProjectFiles/ws-conf/rsync/exclude.list \
+          rsync://downloadUser@release.topflames.com:873/release/yyfb-ui \
           /home/dev/DevProjectFiles/ws-release/ 
 
     ssh dev@39.100.234.106 \
@@ -244,41 +284,41 @@ function pullPorject() {
     # 本地 service 1
     rsync --no-iconv -avzP --progress --delete \
           --exclude-from=/home/dev/DevProjectFiles/ws-conf/rsync/exclude.list \
-          /home/dev/DevProjectFiles/ws-release/qifa-service/target/qifa-service-1.0-SNAPSHOT/ \
-          /home/dev/DevProjectFiles/ws-root/qifa-service-1/
+          /home/dev/DevProjectFiles/ws-release/yyfb-service/target/yyfb-service-1.0-SNAPSHOT/ \
+          /home/dev/DevProjectFiles/ws-root/yyfb-service-1/
 
     # 本地 service 2
     rsync --no-iconv -avzP --progress --delete \
           --exclude-from=/home/dev/DevProjectFiles/ws-conf/rsync/exclude.list \
-          /home/dev/DevProjectFiles/ws-release/qifa-service/target/qifa-service-1.0-SNAPSHOT/ \
-          /home/dev/DevProjectFiles/ws-root/qifa-service-2/
+          /home/dev/DevProjectFiles/ws-release/yyfb-service/target/yyfb-service-1.0-SNAPSHOT/ \
+          /home/dev/DevProjectFiles/ws-root/yyfb-service-2/
 
     # 本地 console
     ssh dev@39.100.234.106 \
     rsync --no-iconv -avzP --progress --delete \
           --exclude-from=/home/dev/DevProjectFiles/ws-conf/rsync/exclude.list \
-          /home/dev/DevProjectFiles/ws-release/qifa-console/target/ \
+          /home/dev/DevProjectFiles/ws-release/yyfb-console-web/target/ \
           /home/dev/DevProjectFiles/ws-root/www/console.app.com/
 
     # 本地 site
     rsync --no-iconv -avzP --progress --delete \
           --exclude-from=/home/dev/DevProjectFiles/ws-conf/rsync/exclude.list \
-          /home/dev/DevProjectFiles/ws-release/qifa-site/target/ \
+          /home/dev/DevProjectFiles/ws-release/yyfb-ui/target/ \
           /home/dev/DevProjectFiles/ws-root/www/www.app.com/
 
 
     mkdir -p  /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18081/ && \
-     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/jyb-service-1\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18081/jyb-service.xml
+     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/yyfb-service-1\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18081/yyfb-service.xml
 
     mkdir -p  /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18082/ && \
-     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/jyb-service-2\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18082/jyb-service.xml
+     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/yyfb-service-2\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18082/yyfb-service.xml
 
 
     mkdir -p  /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28081/ && \
-     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/jyb-service-dev-1\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28081/jyb-service-dev.xml
+     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/yyfb-service-dev-1\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28081/jyb-service-dev.xml
 
     mkdir -p  /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28082/ && \
-     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/jyb-service-dev-2\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28082/jyb-service-dev.xml
+     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/yyfb-service-dev-2\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28082/jyb-service-dev.xml
 
 
 
@@ -319,11 +359,11 @@ tee  /home/dev/DevProjectFiles/ws-conf/tomcat8/context.xml.redis <<-'EOF'
 EOF
 
 
-tee  /home/dev/DevProjectFiles/ws-root/jyb-service-dev-1/WEB-INF/classes/application.properties <<-'EOF'
+tee  /home/dev/DevProjectFiles/ws-root/yyfb-service-1/WEB-INF/classes/application.properties <<-'EOF'
 #--------------------------------
 # application settings
 #--------------------------------
-app.name=jyb-service-dev
+app.name=yyfb-service
 
 #--------------------------------
 # login settings
@@ -334,7 +374,7 @@ app.register.enabled=false
 app.qrCode.enabled=false
 app.qrCode.url=https://www.pgyer.com/niiH
 app.log.parent.path=/tmp/logs
-app.log.name=jyb-service-dev
+app.log.name=yyfb-service
 #login settings end 
 
 #--------------------------------
@@ -352,7 +392,7 @@ app.log.name=jyb-service-dev
 #--------------------------------
 #mysql database settings begin
 jdbc.driver=com.mysql.jdbc.Driver
-jdbc.url=jdbc:mysql://172.16.33.91:3306/jyb-service-dev?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&nullCatalogMeansCurrent=true
+jdbc.url=jdbc:mysql://172.19.153.242:3306/yyfb-service?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&nullCatalogMeansCurrent=true
 jdbc.username=root
 jdbc.password=oMqiVy#oF603UZve
 #mysql database settings end
@@ -401,8 +441,8 @@ function uploadProperties() {
 tee  /home/dev/DevProjectFiles/ws-root/www/console.app.com/application.properties.json <<-'EOF'
 {
   "comment": "通用配置参数，后台接口地址",
-  "BASE_API": "http://121.40.224.188/jyb-service",
-  "NOTIFICATION_API": "http://oa.topflames.com:8880"
+  "BASE_API": "http://220.170.144.73:81/yyfb-service",
+  "NOTIFICATION_API": "http://220.170.144.73:81"
 }
 EOF
 
