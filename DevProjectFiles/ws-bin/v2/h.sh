@@ -32,8 +32,22 @@ function installEnv() {
     # 可选 通过界面上远程登录，首次登录获取 管理密码（远程登录密码）
     # 复制公钥，通过公钥登录  本地复制public-key  ssh-copy-id root@指定ip
     # ssh-copy-id dev@39.100.234.208 
+    # ssh-copy-id -i  ~/.ssh/agent root@39.100.234.208
     # ssh-copy-id -i  ~/.ssh/agent dev@39.100.234.208 
     # docker exec -it jenkins-ci ssh -i /var/jenkins_home/.ssh/agent dev@121.40.224.188
+    #
+    # ssh-add命令是把专用密钥添加到ssh-agent的高速缓存中。该命令位置在/usr/bin/ssh-add
+    # ssh-add  -l：显示ssh-agent中的密钥
+    # 1、把专用密钥添加到 ssh-agent 的高速缓存中：
+    # ssh-add ~/.ssh/id_dsa
+    # 2、从ssh-agent中删除密钥
+    # ssh-add -d ~/.ssh/id_xxx.pub
+    # 3、查看ssh-agent中的密钥：
+    # ssh-add -l
+    # ssh-add ~/.ssh/agent
+    # 
+    # 问题:执行ssh-add时出现Could not open a connection to your authentication agent
+    # eval `ssh-agent`
     ssh-copy-id root@39.100.234.208  
     # 增加主机信任
     # ssh登录到主机
@@ -74,11 +88,18 @@ function installEnv() {
     df -h
     # dns
     # 显示当前网络连接
-    sudo nmcli connection show
+    sudo nmcli con show -active
+    sudo nmcli con show eno16777984
+    # 显示设备的连接状态
+    sudo nmcli dev status
+    sudo nmcli dev show eno16777984
     # 修改当前网络连接对应的DNS服务器，这里的网络连接可以用名称或者UUID来标识
     sudo nmcli con mod eth0 ipv4.dns "114.114.114.114 8.8.8.8"
+    sudo nmcli con mod "Wired connection 3" +ipv4.dns 8.8.8.8
     # 将dns配置生效
     sudo nmcli con up eth0
+    # 重新加载配置网络配置文件
+    sudo nmcli con reload
     #
     # 安装一些通用软件
     sudo yum install -y wget curl dnsmasq bind-utils net-tools lrzsz rsync zip unzip nc selinux-policy*  yum-utils device-mapper-persistent-data lvm2 iptables-services kernel-devel usbutils pciutils
@@ -98,6 +119,8 @@ function installUserDev() {
     useradd dev
     # 密码 默认密码 NpSmC2gV
     passwd dev   
+    # root
+    sudo usermod -aG docker $(whoami)
 }
 
 # TODO 未完成，下面是命令行用法
@@ -181,20 +204,31 @@ function pullImages() {
     sudo docker save -o g127-nginx.tar g127/nginx
     sudo docker save -o g127-redis.tar redis:3.2.12-alpine
     sudo docker save -o g127-mysql.tar mysql:5.7
-
+    sudo docker save -o sonatype-nexus.tar sonatype/nexus:2.14.16
+    # 上传目录下的tar文件到服务器。
     scp  -P 11433 *.tar dev@58.218.126.33:~/ 
+    scp  -P 11433 sonatype-nexus.tar dev@58.218.126.33:~/ 
     scp /Users/gg/DevProjectFiles/ws-my-github/docctFiles.zip dev@111.67.193.151:~/
 
     sudo docker load -i g127-java.tar 
     sudo docker load -i g127-nginx.tar 
     sudo docker load -i g127-redis.tar 
     sudo docker load -i g127-mysql.tar 
-
+    sudo docker load -i sonatype-nexus.tar
+    #
+    docker rm -fv $(docker ps -a | grep "Exited" | awk '{print $1 }') 
+    #
+    docker rmi $(docker images | grep "none" | awk '{print $3}')
     # 在docker容器中运行 相关命令 查询 jdk版本和tomcat版本
     docker run -it --rm g127/java catalina.sh version
     # 
     docker run -it --rm g127/nginx nginx -V
     docker run -it --rm g127/nginx ls -l /usr/local/share/GeoIP/
+    # redis
+    docker run -it --rm redis:3.2.12-alpine ls -l /usr/local/etc/redis/
+    # nexus
+    docker run -it sonatype/nexus ./bin/nexus status
+
     # 在已经启动的docker容器中运行 相关命令 查询 jdk版本和tomcat版本
     docker exec -t <your container name> 
 }
@@ -212,6 +246,9 @@ function uploadConfigure() {
     # 上传
     scp /Users/gg/DevProjectFiles/ws-my-github/docctFiles.zip dev@111.67.193.151:~/
     scp /Users/gg/Downloads/docker-output.zip dev@111.67.193.151:~/
+    # zip命令
+    zip -r web1.zip tmp/logs/web1/**
+    # 
     unzip DevProjectFiles.zip && rm -rf __* && rm -rf *.zip
 
 }
@@ -308,17 +345,17 @@ function pullPorject() {
 
 
     mkdir -p  /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18081/ && \
-     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/yyfb-service-1\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18081/yyfb-service.xml
+     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/xzoa-service-1\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18081/xzoa-service.xml
 
     mkdir -p  /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18082/ && \
-     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/yyfb-service-2\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18082/yyfb-service.xml
+     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/xzoa-service-2\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost18082/xzoa-service.xml
 
 
     mkdir -p  /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28081/ && \
-     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/yyfb-service-dev-1\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28081/jyb-service-dev.xml
+     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/xzoa-service-dev-1\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28081/jyb-service-dev.xml
 
     mkdir -p  /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28082/ && \
-     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/yyfb-service-dev-2\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28082/jyb-service-dev.xml
+     echo "<Context reloadable=\"false\" docBase=\"/DevProjectFiles/ws-root/xzoa-service-dev-2\" />" > /home/dev/DevProjectFiles/ws-conf/tomcat8/localhost28082/jyb-service-dev.xml
 
 
 
@@ -359,11 +396,11 @@ tee  /home/dev/DevProjectFiles/ws-conf/tomcat8/context.xml.redis <<-'EOF'
 EOF
 
 
-tee  /home/dev/DevProjectFiles/ws-root/yyfb-service-1/WEB-INF/classes/application.properties <<-'EOF'
+tee  /home/dev/DevProjectFiles/ws-root/xzoa-service-1/WEB-INF/classes/application.properties <<-'EOF'
 #--------------------------------
 # application settings
 #--------------------------------
-app.name=yyfb-service
+app.name=xzoa-service
 
 #--------------------------------
 # login settings
@@ -374,7 +411,7 @@ app.register.enabled=false
 app.qrCode.enabled=false
 app.qrCode.url=https://www.pgyer.com/niiH
 app.log.parent.path=/tmp/logs
-app.log.name=yyfb-service
+app.log.name=xzoa-service
 #login settings end 
 
 #--------------------------------
@@ -392,7 +429,7 @@ app.log.name=yyfb-service
 #--------------------------------
 #mysql database settings begin
 jdbc.driver=com.mysql.jdbc.Driver
-jdbc.url=jdbc:mysql://172.19.153.242:3306/yyfb-service?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&nullCatalogMeansCurrent=true
+jdbc.url=jdbc:mysql://127.0.0.1:3306/xzoa-service?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&nullCatalogMeansCurrent=true
 jdbc.username=root
 jdbc.password=oMqiVy#oF603UZve
 #mysql database settings end
@@ -438,11 +475,11 @@ EOF
 
 function uploadProperties() {
     # 上传
-tee  /home/dev/DevProjectFiles/ws-root/www/console.app.com/application.properties.json <<-'EOF'
+tee  /home/dev/DevProjectFiles/ws-root/www/www.app.com/application.properties.json <<-'EOF'
 {
   "comment": "通用配置参数，后台接口地址",
-  "BASE_API": "http://220.170.144.73:81/yyfb-service",
-  "NOTIFICATION_API": "http://220.170.144.73:81"
+  "BASE_API": "http://58.218.126.33:10050/xzoa-service",
+  "NOTIFICATION_API": "http://58.218.126.33:10050"
 }
 EOF
 

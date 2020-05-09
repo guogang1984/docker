@@ -21,20 +21,42 @@
 # docker stop jenkins && docker rm  -fv jenkins
 # docker rm -fv jenkins
 #
+# http://<jenkins-url>/script
+# Jenkins.instance.pluginManager.plugins.each{ 
+#   plugin -> 
+#     println ("${plugin.getDisplayName()} (${plugin.getShortName()}): ${plugin.getVersion()}")
+# }
+#
+# docker run \
+#       --user jenkins \
+#       --hostname ci.topflames.com \
+#       --name jenkins-casc \
+#       --restart=unless-stopped  \
+#       -e SLAVE_AGENT_PORT=32082 \
+#       -p 8080:8080 \
+#       -p 32082:32082 \
+#       -v $HOME/.ssh:/var/jenkins_home/.ssh:ro \
+#       -v $HOME/DevProjectFiles/SupportLibrary/.m2/repository:/var/jenkins_home/.m2/repository:rw \
+#       -v $HOME/DevProjectFiles/ws-data/jenkins-casc:/var/jenkins_home \
+#       -v /var/run/docker.sock:/var/run/docker.sock \
+#       --group-add=$(stat -c %g /var/run/docker.sock) \
+#       --privileged \
+#       -d g127/jenkins-casc
+
 version: '2'
 services:
   jenkins:
-    image: 'jenkins/jenkins:lts-alpine'
-    container_name: jenkins
+    image: 'g127/jenkins-casc'
+    container_name: jenkins-casc
     hostname: 'ci.topflames.com'
     restart: unless-stopped
     environment:
-      TZ: 'Asia/Shanghai'
+      SLAVE_AGENT_PORT: 32082
     volumes:
-      - ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro
-      - ~/DevProjectFiles/ws-conf/jenkins:/var/jenkins_home
-      #- /bin/docker:/usr/bin/docker
-      #- /var/run/docker.sock:/var/run/docker.sock
+      - home/dev/.ssh:/var/jenkins_home/.ssh:ro
+      - home/dev/DevProjectFiles/SupportLibrary/.m2/repository:/var/jenkins_home/.m2/repository:rw
+      - home/dev/DevProjectFiles/ws-data/jenkins-casc:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "8080:8080"
       - "50000:50000"

@@ -1,11 +1,12 @@
 # --------------------------------------------------------
+# docker pull mongo:3.4
 # docker run \
 #   --hostname mongo \
 #   --name db-mongo \
 #   --restart=unless-stopped  \
 #   -p 27017:27017 \
 #   -v /etc/localtime:/etc/localtime:ro \
-#   -v ~/DevProjectFiles/ws-data/mongo:/data \
+#   -v /home/dev/DevProjectFiles/ws-data/mongo:/data \
 #   --privileged \
 #   --net=app-net \
 #   -d mongo:3.4

@@ -5,7 +5,7 @@
 ##  sudo chown dev:dev -R ~/DevProjectFiles/ws-data/nexus-data
 ##  sudo chmod 777 -R ~/DevProjectFiles/ws-data/nexus-data
 ##  # 启动
-##  docker run -p 8081:8081 --name nexus -v ~/DevProjectFiles/ws-data/nexus-data:/sonatype-work sonatype/nexus
+##  docker run -p 8081:8081 --name nexus -v ~/DevProjectFiles/ws-data/nexus-data:/sonatype-work sonatype/nexus:2.14.16
 ##  # 默认管理员密码 admin admin123
 ##  #（1）增加一个Proxy Repository，id，name随便写，库地址就写
 ##  http://maven.aliyun.com/nexus/content/groups/public/
@@ -47,10 +47,11 @@
 ##  等待程序运行完成之后可以发现indexer文件夹下出现了很多文件，将这些文件放置到{nexus-home}/sonatype-work/nexus/indexer/central-ctx目录下，重新启动nexus
 ##  ./nexus restart  
 ##  
+# docker pull sonatype/nexus:2.14.16
 version: "2"
 services:
-  tomcat01:
-    image: 'sonatype/nexus'
+  nexus2:
+    image: 'sonatype/nexus:2.14.16'
     container_name: nexus2
     hostname: 'nexus.topflames.com'
     restart: unless-stopped

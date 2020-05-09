@@ -1,0 +1,35 @@
+configuration-as-code
+configuration-as-code-support
+localization-zh-cn
+blueocean
+job-dsl
+cloudbees-folder
+workflow-aggregator
+pipeline-utility-steps
+generic-webhook-trigger
+git-changelog
+violation-comments-to-gitlab
+#
+bouncycastle-api
+docker
+docker-workflow
+#
+#jsch
+# 取消 trilead-api | matrix-auth
+# 安装 maven 
+maven-plugin
+# 安装 subversion |git | git-parameter | gitee | gitlab-branch-source ( Dependencies git )
+git
+#gitlab-branch-source
+git-parameter
+#gitee
+subversion
+#
+# 插件名 packer https://plugins.jenkins.io/packer/
+# 插件名 ansible https://plugins.jenkins.io/ansible/
+# 插件名 sonar https://plugins.jenkins.io/sonar/     SonarQube Scanner
+# 插件名 nexus-jenkins-plugin
+#
+# 其他插件
+credentials-binding
+command-launcher
