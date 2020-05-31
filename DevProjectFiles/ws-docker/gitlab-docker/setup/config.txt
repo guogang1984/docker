@@ -1,0 +1,4 @@
+gitlab_host=http://localhost
+gitlab_user="root"
+gitlab_password="admin123" #From gitlab.rb
+    

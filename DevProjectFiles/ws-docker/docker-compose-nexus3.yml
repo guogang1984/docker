@@ -1,0 +1,38 @@
+##  安全问题
+# 1 如果想执行脚本api接口，见下面说明
+# https://support.sonatype.com/hc/en-us/articles/360045220393-Scripting-Nexus-Repository-Manager-3
+# Can I Fully Disable Script Creation and Update Features in Version 3.21.1 and Older?
+# No. Upgrade to 3.21.2 or newer to access that default behaviour.
+#
+# How do I Enable All Script Features in Version 3.21.2 and Newer Edit $data-dir/etc/nexus.properties. Add the following on a new line, making sure the file is saved with an ending new line and with the original file permissions:
+# nexus.scripts.allowCreation=true
+# Restart NXRM to pick up the property change.
+#
+# 2 如果要查询 Nexus 3 Data 目录
+# https://support.sonatype.com/hc/en-us/articles/218707647
+# ps -ef | grep NexusMain  然后 找 karaf.data 关键字
+#
+# 3 Nexus3.x批量导入本地库
+# https://blog.csdn.net/u014468095/article/details/87261817
+# 
+version: "2"
+services:
+  nexus3:
+    image: 'sonatype/nexus3:3.22.0'
+    container_name: nexus3
+    hostname: 'nexus3.topflames.com'
+    restart: unless-stopped
+    environment:
+      TZ: 'Asia/Shanghai'
+      CATALINA_TMPDIR : '/tmp/java/tmp'
+      JAVA_OPTS : ' -Djava.io.tmpdir=/tmp/java/tmp -Djava.security.egd=file:/dev/./urandom -Duser.timezone=GMT+08 '
+    ports:
+      - '58082:8081'
+    volumes:
+      - ~/DevProjectFiles/ws-data/nexus3-data/:/nexus-data
+    networks:
+      - app-net
+networks:
+  app-net:
+    external:
+      name: app-net

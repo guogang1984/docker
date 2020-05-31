@@ -24,6 +24,63 @@ function err() {
     echo "$(date +'%Y-%m-%d %H:%M:%S%z') [ERRO] - $@" >&2
 }
 
+function toggleNetwork(){
+    # CENTOS 7 下service network restart
+    # systemctl status network.service 无法启动
+    # 执行 /etc/rc.d/init.d/network start
+    # 必须先查询出 自动获取的网卡地址 ip 网关 dns等
+    # 然后备份 /etc/sysconfig/network-scripts 
+    # 修改 ifcfg-xxx 为 “静态IP地址”
+    # 
+    #   
+    #   BOOTPROTO="static"         # 使用静态IP地址，默认为dhcp
+    #   ONBOOT=yes
+    #   
+    #   IPADDR=192.168.0.165
+    #   NETMASK=255.255.255.0
+    #   GATEWAY=192.168.0.1
+    #   DNS1=114.114.114.114
+    #   HWADDR=fa:16:3e:c3:89:02  # 一定要加上
+    #  
+    # 设定开机启动一个名为NetworkManager-wait-online服务
+    # 命令为：systemctl enable NetworkManager-wait-online.service
+    # 查看/etc/sysconfig/network-scripts下，将其余无关的网卡位置文件全删掉，避免不必要的影响
+    # 重启 reboot -f
+}
+
+# TODO 未完成，下面是命令行用法
+function installCPanel() {
+    # 设置主机名  项目简称xxx-序号1-ip尾数
+    # hostnamectl set-hostname xxxapp-1-188
+
+    # 注：在安装cPanel的时候，可能出现的一些问题：
+    # 1、主机名问题:
+    hostname localhost.localdomain
+    # 2、重新执行安装：
+    rm -rf /root/installer.lock
+    sh latest 执行安装脚本
+    # 4、关闭SELinux
+    # 编辑 /etc/selinux/config文件
+    # 修改为 SELINUX=disabled
+    # 5、停用防火墙
+    chkconfig iptables off
+    service iptables stop
+    # 6.无法和cpanel.net建立连接，ping提示ping: unknown host cpanel.net，这是dns的问题，修改/etc/resolv.conf，将nameserver 设置为 8.8.8.8
+
+    # cpanel安装时出现这个错误
+    # Fatal! Perl must be installed before proceeding!
+    # 可以先
+    # yum install perl
+    # 然后再重新安装就可以了
+
+    yum -y install screen perl
+    screen -S cpanel
+    cd /home
+    wget -N http://httpupdate.cpanel.net/latest
+    # sh latest 2>&1 | tee ./cPanel-Install.log
+    # nohup sh latest > ./cPanel-Install.log 2>&1 &
+}
+
 # TODO 未完成，下面是命令行用法
 function installEnv() {
     # ssh-keygen -t rsa -C "agent" -f ~/DevProjectFiles/ws-conf/jenkins/.ssh/agent
@@ -33,7 +90,7 @@ function installEnv() {
     # 复制公钥，通过公钥登录  本地复制public-key  ssh-copy-id root@指定ip
     # ssh-copy-id dev@39.100.234.208 
     # ssh-copy-id -i  ~/.ssh/agent root@39.100.234.208
-    # ssh-copy-id -i  ~/.ssh/agent dev@39.100.234.208 
+    #
     # docker exec -it jenkins-ci ssh -i /var/jenkins_home/.ssh/agent dev@121.40.224.188
     #
     # ssh-add命令是把专用密钥添加到ssh-agent的高速缓存中。该命令位置在/usr/bin/ssh-add
@@ -87,6 +144,10 @@ function installEnv() {
     fdisk -l 
     df -h
     # dns
+    # 看netmask  ,dns
+    ifconfig -a 
+    # 看网关
+    netstat   -rn 
     # 显示当前网络连接
     sudo nmcli con show -active
     sudo nmcli con show eno16777984
@@ -117,7 +178,7 @@ function installUserDev() {
 
     # 添加用户
     useradd dev
-    # 密码 默认密码 NpSmC2gV
+    # 密码 默认密码 
     passwd dev   
     # root
     sudo usermod -aG docker $(whoami)
@@ -144,6 +205,28 @@ function installDocker() {
     # 重新登录以后测试
     docker -v
 
+}
+
+# TODO 未完成，下面是命令行用法
+function installDockerMachine() {
+    # Install Docker Machine If you are running Linux:
+    base=https://github.com/docker/machine/releases/download/v0.16.0 &&
+      curl -L $base/docker-machine-$(uname -s)-$(uname -m) >/tmp/docker-machine &&
+      sudo mv /tmp/docker-machine /usr/local/bin/docker-machine &&
+      chmod +x /usr/local/bin/docker-machine
+
+    # Install Docker Machine If you are running macOS:
+    base=https://github.com/docker/machine/releases/download/v0.16.0 &&
+      curl -L $base/docker-machine-$(uname -s)-$(uname -m) >/usr/local/bin/docker-machine &&
+      chmod +x /usr/local/bin/docker-machine
+
+    # If you are running Windows with Git BASH:
+    base=https://github.com/docker/machine/releases/download/v0.16.0 &&
+      mkdir -p "$HOME/bin" &&
+      curl -L $base/docker-machine-Windows-x86_64.exe > "$HOME/bin/docker-machine.exe" &&
+      chmod +x "$HOME/bin/docker-machine.exe"
+
+    #
 }
 
 # TODO 未完成，下面是命令行用法

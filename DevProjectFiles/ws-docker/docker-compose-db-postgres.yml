@@ -15,6 +15,18 @@
 #
 #   docker run -d -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=odoo -e POSTGRES_DB=postgres --name db postgres:10
 #   docker run -p 8069:8069 --name odoo --link db-postgres:db --privileged --net=app-net  -d odoo
+
+#   docker run -d \
+#       --name postgres \
+#       -e POSTGRES_USER='root' \
+#       -e POSTGRES_PASSWORD='root' \
+#       -e POSTGRES_DB='postgres' \
+#       -e PGDATA=/var/lib/postgresql/data/pgdata \
+#       -v $HOME/DevProjectFiles/ws-data/postgres:/var/lib/postgresql/data \
+#       -p 5432:5432 \
+#       postgres:10-alpine
+#
+#   CREATE DATABASE sales OWNER salesapp TABLESPACE salesspace;
 # --------------------------------------------------------
 version: "2"
 services:

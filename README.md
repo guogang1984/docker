@@ -19,19 +19,6 @@ mysql 5.6  --5.7
 docker exec -it be0cc52395be mysql_upgrade -uroot -p
 
 
-scp -r ~/DevProjectFiles/ws-my-github/docker/DevProjectFiles/ws-docker dev@120.77.218.7:/home/dev/DevProjectFiles/
-
-scp -r ~/DevProjectFiles/ws-my-github/docker/DevProjectFiles/ws-bin dev@120.77.218.7:/home/dev/DevProjectFiles/
-
-scp -r ~/DevProjectFiles/ws-my-github/docker/DevProjectFiles/ws-conf/nginx/vhosts/projects dev@120.77.218.7:/home/dev/DevProjectFiles/ws-conf/nginx/vhosts/
-
-
-scp -r ~/DevProjectFiles/ws-my-github/docker/DevProjectFiles/ws-conf/nginx/ dev@120.77.218.7:/home/dev/DevProjectFiles/ws-conf/nginx/upstream.conf
-
-
-
-
-
 # 机器配置
 机子内存如果是 4G：
  

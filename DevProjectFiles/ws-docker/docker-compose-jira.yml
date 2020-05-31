@@ -1,0 +1,29 @@
+# jira
+# 1 pull docker 镜像：  jira:7.11.1(目前的最新版本)    mysql:5.7
+#    docker pull cptactionhank/atlassian-jira-software
+#    docker pull mysql:5.7
+# 2 启动mysql docker实例
+#    docker run --name atlassian-mysql --restart always \ 
+#             -p 3306:3306 -v /opt/mysql_data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=passwd -d mysql:5.7   #记得修改passwd
+# 3 连接mysql
+#   docker run -it --link atlassian-mysql:mysql --rm mysql \ 
+#     sh -c 'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD"'
+# 
+# 4 创建jira数据库,并添加jira用户
+# create database jira default character set utf8 collate utf8_bin;
+# CREATE USER `jira`@`%` IDENTIFIED BY 'jira';GRANT ALL ON *.* TO `jira`@`%` WITH GRANT OPTION;
+# alter user 'jira'@'%' identified with mysql_native_password by 'jira';
+#
+# 5 修改mysql事物隔离级别
+# set global transaction isolation level read committed;
+# set session transaction isolation level read committed;
+# 
+# 6 启动jira实例
+# docker run --detach --restart always  \
+#   -v /data/atlassian/confluence:/home --publish 8080:8080 cptactionhank/atlassian-jira-software
+# 
+# 7 访问：192.168.x.x:8080 进行jira配置。
+# 8 破解
+# docker exec --user root 97 mv /opt/atlassian/jira/atlassian-jira/WEB-INF/lib/atlassian-extras-3.2.jar /opt/atlassian/jira/atlassian-jira/WEB-INF/lib/atlassian-extras-3.2.jar_bak
+# docker cp atlassian-extras-3.1.2.jar 97:/opt/atlassian/jira/atlassian-jira/WEB-INF/lib/
+# docker restart 97     #97为jira容器短id

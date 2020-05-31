@@ -58,22 +58,12 @@ docker run \
 ```
 
 
-docker run  --name jenkins --user root --restart=unless-stopped  -p 9081:8080   -v /home/dev/DevProjectFiles/ws-data/jenkins:/var/jenkins_home -d g127/jenkins-casc
+###  huawei swr 推送具体
+# 
+docker login -u cn-north-4@QG3PAJLYR3JYH04Q2LXG -p feae912f408ccbf6cd50a085c31bfaf15b86c4e374a3b5186691f279c6e1fcfa swr.cn-north-4.myhuaweicloud.com
 
-Remove the jenkins master container
-```bash
-docker rm -fv jenkins
-```
+#
+docker tag g127/jenkins-casc swr.cn-north-4.myhuaweicloud.com/g127/jenkins-casc
 
-Remove the jenkins image
-```bash
-docker rmi -f g127/jenkins-casc
-```
-
-Push the jenkins image
-docker push g127/jenkins-casc
-
-
-sudo docker save -o g127-jenkins-casc.tar  g127/jenkins-casc
-
-scp -r g127-jenkins-casc.tar dev@119.3.184.192:~/
+#
+docker push swr.cn-north-4.myhuaweicloud.com/g127/jenkins-casc

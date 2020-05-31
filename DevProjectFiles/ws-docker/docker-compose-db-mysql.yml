@@ -24,8 +24,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: 'root'
     ports:
-#      - '127.0.0.1:3306:3306'
-      - '3306:3306'
+      - '127.0.0.1:3306:3306'
+      # - '3306:3306'
     volumes:
       - ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro
       - ~/DevProjectFiles/ws-conf/mysql:/etc/mysql/conf.d

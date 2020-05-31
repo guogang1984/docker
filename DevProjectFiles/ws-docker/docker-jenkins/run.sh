@@ -1,6 +1,8 @@
 #!/bin/bash
 
 export GITLAB_PERSONAL_ACCESS_TOKEN=$(cat ../gitlab-docker/setup/personal-access-token.txt)
+export DOCKER_JENKINS_NAME=jenkins
+export M2_DIR=$HOME/DevProjectFiles/SupportLibrary/.m2
 export M2_REPO=$HOME/DevProjectFiles/SupportLibrary/.m2/repository
 export JENKINS_DATA=$HOME/DevProjectFiles/ws-data/jenkins-casc
 export PORT_8080=32081
@@ -34,13 +36,13 @@ mkdir -p $M2_REPO $JENKINS_DATA
 if [ $SYSTEM = "Linux" ] ; then # 如果是linux话输出linux字符串
 
 docker run \
-  --name jenkins \
+  --name $DOCKER_JENKINS_NAME \
   -u jenkins \
   -p $PORT_8080:8080 \
   -p $PORT_50000:$PORT_50000 \
   -e SLAVE_AGENT_PORT=$PORT_50000 \
   -v $HOME/.ssh:/var/jenkins_home/.ssh:ro \
-  -v $M2_REPO:/var/jenkins_home/.m2/repository:rw \
+  -v $M2_DIR:/var/jenkins_home/.m2:rw \
   -v $JENKINS_DATA:/var/jenkins_home \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --group-add=$(stat -c %g /var/run/docker.sock) \
@@ -50,14 +52,14 @@ docker run \
 elif [ $SYSTEM = "Darwin" ] ; then
 
 docker run \
-  --name jenkins \
+  --name $DOCKER_JENKINS_NAME \
   -u jenkins \
   -p $PORT_8080:8080 \
   -p $PORT_50000:$PORT_50000 \
   -e SLAVE_AGENT_PORT=$PORT_50000 \
   -e GITLAB_PERSONAL_ACCESS_TOKEN=$GITLAB_PERSONAL_ACCESS_TOKEN \
   -v $HOME/.ssh:/var/jenkins_home/.ssh:ro \
-  -v $M2_REPO:/var/jenkins_home/.m2/repository:rw \
+  -v $M2_DIR:/var/jenkins_home/.m2:rw \
   -v $JENKINS_DATA:/var/jenkins_home \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --group-add=$(stat -f %g /var/run/docker.sock) \
