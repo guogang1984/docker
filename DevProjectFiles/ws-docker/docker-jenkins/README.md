@@ -67,3 +67,23 @@ docker tag g127/jenkins-casc swr.cn-north-4.myhuaweicloud.com/g127/jenkins-casc
 
 #
 docker push swr.cn-north-4.myhuaweicloud.com/g127/jenkins-casc
+
+
+# 驼峰公司服务器上使用的
+docker run  \
+      --user jenkins \
+      --hostname ci.topflames.com \
+      --name jenkins-casc \
+      --restart=unless-stopped  \
+      -e SLAVE_AGENT_PORT=32082 \
+      -p 127.0.0.1:8080:8080 \
+      -p 32082:32082 \
+      -v $HOME/.ssh:/var/jenkins_home/.ssh:ro \
+      -v $HOME/DevProjectFiles/SupportLibrary/.m2/repository:/var/jenkins_home/.m2/repository:rw \
+      -v $HOME/DevProjectFiles/ws-data/jenkins-casc:/var/jenkins_home \
+      -v /var/run/docker.sock:/var/run/docker.sock   \
+      --group-add=$(stat -c %g /var/run/docker.sock) \
+      --link gitlab:dev.topflames.com  \
+      --privileged   \
+      --net=topflames-net  \
+      -d g127/jenkins-casc
