@@ -234,7 +234,7 @@ function installDockerCompose() {
     # step 1: 方式一 下载最新版本的 docker-compose 到 /usr/bin 目录下
     sudo curl -L https://github.com/docker/compose/releases/download/1.24.1/docker-compose-`uname -s`-`uname -m` -o /usr/bin/docker-compose
     # step 1: 方式二 本地上传
-    scp -r ~/Downloads/docker-compose-Linux-x86_64 root@111.67.193.151:/usr/bin/docker-compose
+    scp -r  -P 18022 ~/Downloads/docker-compose-Linux-x86_64 root@58.49.165.253:/usr/bin/docker-compose
     # step 2: 增加执行权限
     sudo chmod +x /usr/bin/docker-compose
     # 重新登录以后测试
@@ -289,7 +289,8 @@ function pullImages() {
     sudo docker save -o g127-mysql.tar mysql:5.7
     sudo docker save -o sonatype-nexus.tar sonatype/nexus:2.14.16
     # 上传目录下的tar文件到服务器。
-    scp  -P 11433 *.tar dev@58.218.126.33:~/ 
+    scp  -P 18022 *.tar dev@58.49.165.253:~/ 
+    scp  -P 22 *.tar dev@121.36.196.18:~/ 
     scp  -P 11433 sonatype-nexus.tar dev@58.218.126.33:~/ 
     scp /Users/gg/DevProjectFiles/ws-my-github/docctFiles.zip dev@111.67.193.151:~/
 
@@ -314,6 +315,10 @@ function pullImages() {
 
     # 在已经启动的docker容器中运行 相关命令 查询 jdk版本和tomcat版本
     docker exec -t <your container name> 
+
+
+    # 修改数据库配置
+    grep "jdbc:mysql://127.0.0.1" DevProjectFiles/ws-root/webapps-18081* -R | awk -F: '{print $1}' | sort | uniq | xargs sed -i 's#jdbc:mysql://127.0.0.1#jdbc:mysql://mysql#g'
 }
 
 
@@ -379,7 +384,7 @@ function pullPorject() {
     rsync --no-iconv -avzP --progress --delete \
           --password-file=/home/dev/DevProjectFiles/ws-conf/rsync/downloadUser.pas \
           --exclude-from=/home/dev/DevProjectFiles/ws-conf/rsync/exclude.list \
-          rsync://downloadUser@release.topflames.com:873/release/yyfb-service \
+          rsync://downloadUser@release.topflames.com:873/release/topflames-oa-dev31 \
           /home/dev/DevProjectFiles/ws-release/
 
     rsync --no-iconv -avzP --progress --delete \
@@ -479,11 +484,12 @@ tee  /home/dev/DevProjectFiles/ws-conf/tomcat8/context.xml.redis <<-'EOF'
 EOF
 
 
-tee  /home/dev/DevProjectFiles/ws-root/xzoa-service-1/WEB-INF/classes/application.properties <<-'EOF'
+# tee  /home/dev/DevProjectFiles/ws-root/xzoa-service-1/WEB-INF/classes/application.properties <<-'EOF'
+tee  application.properties <<-'EOF'
 #--------------------------------
 # application settings
 #--------------------------------
-app.name=xzoa-service
+app.name=lkyoa-service
 
 #--------------------------------
 # login settings
@@ -494,25 +500,15 @@ app.register.enabled=false
 app.qrCode.enabled=false
 app.qrCode.url=https://www.pgyer.com/niiH
 app.log.parent.path=/tmp/logs
-app.log.name=xzoa-service
+app.log.name=lkyoa-service
 #login settings end 
-
-#--------------------------------
-# oracle database settings
-#--------------------------------
-# oracle database settings begin
-#jdbc.driver=oracle.jdbc.driver.OracleDriver
-#jdbc.url=jdbc:oracle:thin:@127.0.0.1:1521/ORCL
-#jdbc.username=JMOAXT
-#jdbc.password=JMOAXT
-#oracle database settings end
 
 #--------------------------------
 # mysql database settings
 #--------------------------------
 #mysql database settings begin
 jdbc.driver=com.mysql.jdbc.Driver
-jdbc.url=jdbc:mysql://127.0.0.1:3306/xzoa-service?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&nullCatalogMeansCurrent=true
+jdbc.url=jdbc:mysql://mysql:3306/lkyoa-service?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&nullCatalogMeansCurrent=true
 jdbc.username=root
 jdbc.password=oMqiVy#oF603UZve
 #mysql database settings end
@@ -525,12 +521,6 @@ jdbc.pool.maxIdle=10
 jdbc.pool.maxActive=200
 
 #--------------------------------
-# log4jdbc driver settings
-#--------------------------------
-# log4jdbc driver settings
-#jdbc.driver=net.sf.log4jdbc.DriverSpy
-#jdbc.url=jdbc:log4jdbc:h2:file:~/.h2/auth;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-#--------------------------------
 # fileResources settings 
 #--------------------------------
 #fileResources settings begin
@@ -541,7 +531,7 @@ uploadPath=/DevProjectFiles/ws-root/fileResources
 # notification setting 
 #--------------------------------
 notification.push.enabled=true
-notification.appNames=tfoa
+notification.appNames=lkyoa
 
 #--------------------------------
 # redis settings 
@@ -549,7 +539,7 @@ notification.appNames=tfoa
 redis.enabled=true
 redis.host=redis3
 redis.port=6379  
-#redis.pass=123456  
+#redis.pass=123456
 redis.timeout=1000
 EOF
 

@@ -12,6 +12,17 @@
 #   --privileged \
 #   --net=host \
 #   -d g127/nginx
+# 
+# # mac window
+# docker run \
+#   --name web-nginx \
+#   --restart=unless-stopped  \
+#   -v ~/DevProjectFiles/ws-conf/nginx/:/usr/local/openresty/nginx/conf/ \
+#   -v ~/DevProjectFiles/ws-root/:/DevProjectFiles/ws-root/ \
+#   -v ~/tmp/logs/nginx:/usr/local/openresty/nginx/logs \
+#   --privileged \
+#   -p 80:80 \
+#   -d g127/nginx
 #
 # docker stop web-nginx && docker rm  web-nginx
 # docker rm -fv web-nginx

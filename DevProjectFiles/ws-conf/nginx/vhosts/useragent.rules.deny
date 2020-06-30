@@ -1,0 +1,4 @@
+        # see useragent.rules 
+        if ($badAgent) {
+          return 403;
+        }

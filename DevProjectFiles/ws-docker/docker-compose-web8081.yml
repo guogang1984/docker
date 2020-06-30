@@ -33,6 +33,7 @@ services:
     environment:
       TZ: 'Asia/Shanghai'
       CATALINA_TMPDIR : '/tmp/java/tmp'
+      CATALINA_APPBASE : '/DevProjectFiles/ws-root/webapps-8081'
       JAVA_OPTS : ' -Djava.io.tmpdir=/tmp/java/tmp -Djava.security.egd=file:/dev/./urandom -Duser.timezone=GMT+08 -server -Xms1024m -Xmx2048m -XX:PermSize=256m -XX:MaxPermSize=512m '
     ports:
       - '8081:8080'

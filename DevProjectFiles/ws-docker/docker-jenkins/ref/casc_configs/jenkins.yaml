@@ -12,6 +12,7 @@ credentials:
               scope: GLOBAL
               id: "1"
               username: "jenkins"
+              # 密码待修改
               password: "jenkins123"
 #
 jenkins:
