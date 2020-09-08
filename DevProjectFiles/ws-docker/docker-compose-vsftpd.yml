@@ -1,0 +1,13 @@
+# docker run \
+#   --name vsftpd \
+#   --restart=always \
+#   -p 20:20 \
+#   -p 21:21 \
+#   -p 21100-21110:21100-21110 \
+#   -v ~/DevProjectFiles/ws-data/vsftpd:/home/vsftpd \
+#   -e FTP_USER=lky \
+#   -e FTP_PASS=lky \
+#   -e PASV_ADDRESS=121.36.196.18 \
+#   -e PASV_MIN_PORT=21100 \
+#   -e PASV_MAX_PORT=21110 \
+#   -d fauria/vsftpd

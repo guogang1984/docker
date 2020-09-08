@@ -6,7 +6,7 @@
 #   --name db-mysql \
 #   --restart=unless-stopped  \
 #   -e MYSQL_ROOT_PASSWORD='root' \
-#   -p 127.0.0.1:3306:3306 \
+#   -p 3306:3306 \
 #   -v ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro \
 #   -v ~/DevProjectFiles/ws-conf/mysql:/etc/mysql/conf.d \
 #   -v ~/DevProjectFiles/ws-data/mysql:/var/lib/mysql \
@@ -15,6 +15,8 @@
 #   -d mysql:5.7
 #
 # --------------------------------------------------------
+# mysql> grant all privileges on *.* to 'root'@'%' identified by 'root' with grant option;
+# mysql> grant all privileges on *.* to 'nacos'@'%' identified by 'nacos' with grant option;
 version: "2"
 services:
   mysql:

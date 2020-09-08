@@ -2,11 +2,6 @@ credentials:
   system:
     domainCredentials:
       - credentials:
-          - string:
-              scope: GLOBAL
-              id: "gitlab-token"
-              secret: ${GITLAB_PERSONAL_ACCESS_TOKEN:-"123456"}
-              description: "GitLab personal access token"
           # git plugin 连接只支持 usernamePassword 和 证书两种方式
           - usernamePassword:
               scope: GLOBAL
@@ -14,22 +9,26 @@ credentials:
               username: "jenkins"
               # 密码待修改
               password: "jenkins123"
+          - usernamePassword:
+              scope: GLOBAL
+              id: "scmmanager"
+              username: "scmadmin"
+              # 密码待修改
+              password: "scmadmin"       
 #
 jenkins:
   numExecutors: 4
-  scmCheckoutRetryCount: 2
+  scmCheckoutRetryCount: 3
   mode: NORMAL
   quietPeriod: 5
   crumbIssuer:
     standard:
-      excludeClientIPFromCrumb: true
-  globalNodeProperties:
-  - envVars:
-      env:
-      - key: "gitlabUrl"
-        value: "http://localhost:9080"
-      # - key: "jenkinsUrl"
-      #   value: "http://localhost:8080"
+      excludeClientIPFromCrumb: false
+  # globalNodeProperties:
+  # - envVars:
+  #     env:
+  #     - key: "gitlabUrl"
+  #       value: "http://localhost:9080"
   #
   clouds:
     - docker:
@@ -46,8 +45,17 @@ jenkins:
   slaveAgentPort: ${SLAVE_AGENT_PORT:-50000}
 #
 unclassified:
-  # location:
-  #   url: "http://localhost:8080/"
+  location:
+    adminAddress: "support@topflames.com"
+    # url: "http://localhost:8080/"
+  mailer:
+    authentication:
+      username: "support@topflames.com"
+      password: "Tf123456"
+    charset: "UTF-8"
+    smtpHost: "smtp.exmail.qq.com"
+    useSsl: true
+    useTls: false
   # globalLibraries:
   #   libraries:
   #   - name: "awesome-lib"
@@ -74,7 +82,7 @@ jobs:
         quietPeriod(0)
         concurrentBuild(false)
         logRotator {
-          numToKeep(10)
+          numToKeep(5)
         }
         steps {
           shell('echo job dsl!')

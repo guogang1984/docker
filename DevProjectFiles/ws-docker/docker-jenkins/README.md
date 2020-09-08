@@ -4,12 +4,17 @@ docker pull jenkins/jenkins:lts-alpine
 
 Build the image
 ```bash
-docker build -t g127/jenkins-casc .
+docker build -t g127/jenkins-casc:2.235.1-lts-alpine .
 ```
 
 You can decide which Jenkins version to used by passing the `jenkins_tag` docker build argument like in the following
 ```bash
-docker build --build-arg jenkins_tag=lts-alpine -t g127/jenkins-casc .
+docker build --build-arg jenkins_tag=2.252-alpine \
+    -t g127/jenkins-casc:2.252-alpine .
+
+docker build  \
+    -f Dockerfile.nodejs \
+    -t g127/jenkins-casc:lts-alpine-nodejs .
 ```
 
 ## jenkins官方修改时区的方法

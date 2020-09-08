@@ -47,7 +47,7 @@ docker run \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --group-add=$(stat -c %g /var/run/docker.sock) \
   --privileged \
-  -d g127/jenkins-casc
+  -d g127/jenkins-casc:lts-alpine
 
 elif [ $SYSTEM = "Darwin" ] ; then
 
@@ -64,7 +64,7 @@ docker run \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --group-add=$(stat -f %g /var/run/docker.sock) \
   --privileged \
-  -d g127/jenkins-casc
+  -d g127/jenkins-casc:lts-alpine
 
 else
 echo "What?"

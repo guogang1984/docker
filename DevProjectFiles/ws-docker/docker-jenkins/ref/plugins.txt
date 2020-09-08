@@ -1,37 +1,54 @@
+# 基本插件
+# # 配置代码
 configuration-as-code
 configuration-as-code-support
+# # 本地化
 localization-zh-cn
+# # 目录
+cloudbees-folder
+# # 流水线模型
+pipeline-model-definition
+pipeline-utility-steps
+# =workflow-aggregator
+# # 流水线中使用docker
+docker-workflow
+# # 触发器
+generic-webhook-trigger
+# # 脚本化插件
+scriptler
+# # 工作节点
+ssh-slaves
+# # kubernetes
+kubernetes
+
+# # install Notifications and Publishing plugins
+ email-ext
+ mailer
+ slack
+
+# UI插件
 blueocean
 job-dsl
-cloudbees-folder
-workflow-aggregator
-pipeline-utility-steps
-generic-webhook-trigger
-git-changelog
-violation-comments-to-gitlab
-#
-bouncycastle-api
-docker
-docker-workflow
-#
-scriptler
-#
-#jsch
-# 取消 trilead-api | matrix-auth
-# 安装 maven 
-maven-plugin
-# 安装 subversion |git | git-parameter | gitee | gitlab-branch-source ( Dependencies git )
+
+# 源代码插件
+# # git
 git
-#gitlab-branch-source
+git-changelog
 git-parameter
-#gitee
+violation-comments-to-gitlab
+# # svn
 subversion
-#
-# 插件名 packer https://plugins.jenkins.io/packer/
-# 插件名 ansible https://plugins.jenkins.io/ansible/
-# 插件名 sonar https://plugins.jenkins.io/sonar/     SonarQube Scanner
-# 插件名 nexus-jenkins-plugin
-#
+
+# java mvn
+maven-plugin
+
 # 其他插件
+# # 加解密
+bouncycastle-api
 credentials-binding
 command-launcher
+# # docker，gitee
+docker
+gitee
+
+

@@ -7,6 +7,8 @@
 #   -v ~/DevProjectFiles/ws-root/:/DevProjectFiles/ws-root/ \
 #   -v ~/tmp/logs/nginx:/usr/local/openresty/nginx/logs \
 #   -p 80:80 \
+#   -p 8848:8848 \
+#   -p 6379:6379
 #   --privileged \
 #   --net=topflames-net \
 #   --link jenkins-casc:ci.topflames.com \
