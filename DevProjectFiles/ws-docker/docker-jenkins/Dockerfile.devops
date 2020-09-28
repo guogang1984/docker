@@ -1,14 +1,13 @@
+FROM g127/java as builder
+
+RUN echo "ok"
+
 FROM g127/jenkins-casc:lts-alpine
 
 USER root
 
-# RUN echo 'run script' \
-#     # setting apk mirror
-#     && sed -i 's/mirrors.tuna.tsinghua.edu.cn/dl-cdn.alpinelinux.org/g' /etc/apk/repositories \
-#     && apk upgrade --update 
-
 # nodejs begin
-ENV NODE_VERSION 14.9.0
+ENV NODE_VERSION 14.11.0
 
 RUN addgroup -g 2000 node \
     && adduser -u 2000 -G node -s /bin/sh -D node \
@@ -20,7 +19,7 @@ RUN addgroup -g 2000 node \
       && case "${alpineArch##*-}" in \
         x86_64) \
           ARCH='x64' \
-          CHECKSUM="ba4bab3d73a187f9026bce6844da93b7df5ae3e1876330e925419e5e0b3d49b1" \
+          CHECKSUM="de7f2885da05f33b26b387a7ba017d27cc22ad9ef5a3a45d366e62218fcb8661" \
           ;; \
         *) ;; \
       esac \
@@ -102,19 +101,47 @@ RUN apk add --no-cache --virtual .build-deps-yarn curl gnupg tar \
   && yarn --version
 # nodejs end
 
+
+COPY --from=builder /opt /opt
+
 RUN echo 'run script' \
-    && TSINGHUA_MIRROR=https://mirrors.tuna.tsinghua.edu.cn \
-    # https://mirrors.tuna.tsinghua.edu.cn/apache//jmeter/binaries/apache-jmeter-5.2.1.tgz
-    && JMETER_DL_URL=${TSINGHUA_MIRROR}/apache/jmeter/binaries/apache-jmeter-5.2.1.tgz \
-    && apk add --update curl \
-    # install jmeter 
+    # setting apk mirror
+    # && sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories \
+    && sed -i 's/mirrors.tuna.tsinghua.edu.cn/dl-cdn.alpinelinux.org/g' /etc/apk/repositories \
+    && apk update \
+    # curl
+    && apk add --upgrade curl && curl --version \
+    # git 
+    && apk add --upgrade git git-lfs && git --version \
+    # svn
+    && apk add --upgrade subversion && svn --version \
+    # ansible
+    && apk add --upgrade ansible && mkdir -p /etc/ansible && echo "localhost" >/etc/ansible/hosts && ansible --version \
+    # packer
+    && apk add --upgrade packer --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing && packer --version \
+    # packer
+    && apk add --upgrade terraform --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community && terraform --version \
+    # mvn
+    && mvn --version \
+    # jmeter https://mirrors.tuna.tsinghua.edu.cn/apache/jmeter/binaries/apache-jmeter-5.2.1.zip
+    #&& JMETER_DL_URL=${TSINGHUA_MIRROR}/apache/jmeter/binaries/apache-jmeter-5.2.1.tgz \
+    && JMETER_DL_URL=https://downloads.apache.org/jmeter/binaries/apache-jmeter-5.2.1.tgz \
     && curl -jksSL -o /tmp/apache-jmeter.tgz ${JMETER_DL_URL} \
     && gunzip /tmp/apache-jmeter.tgz \
     && tar -C /opt -xf /tmp/apache-jmeter.tar \
     && ln -s /opt/apache-jmeter-5.2.1 /opt/apache-jmeter \
-    && echo "ok"
+    # docker
+    #&& DOCKER_DL_URL=${TSINGHUA_MIRROR}/docker-ce/linux/static/stable/x86_64/docker-18.09.9.tgz \
+    && DOCKER_DL_URL=https://download.docker.com/linux/static/stable/x86_64/docker-18.09.9.tgz \
+    && curl -fsSL -o /tmp/docker.tgz ${DOCKER_DL_URL} \
+    && tar -C /tmp -xzvf /tmp/docker.tgz \
+    && mv /tmp/docker/* /usr/local/bin/ \
+    && docker -v \
+    # init folder
+    && export SWITCH_RUN=init && /opt/docker-entrypoint.sh
 
 ENV PATH=${PATH}:/opt/jmeter/bin
+
 
 USER jenkins
 

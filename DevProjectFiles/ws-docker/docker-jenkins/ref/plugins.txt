@@ -9,6 +9,7 @@ cloudbees-folder
 # # 流水线模型
 pipeline-model-definition
 pipeline-utility-steps
+pipeline-maven
 # =workflow-aggregator
 # # 流水线中使用docker
 docker-workflow
@@ -39,8 +40,12 @@ violation-comments-to-gitlab
 # # svn
 subversion
 
-# java mvn
+# java mvn 
 maven-plugin
+
+# gradle artifactory
+gradle
+artifactory
 
 # 其他插件
 # # 加解密

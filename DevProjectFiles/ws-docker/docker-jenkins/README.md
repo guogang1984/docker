@@ -4,17 +4,52 @@ docker pull jenkins/jenkins:lts-alpine
 
 Build the image
 ```bash
-docker build -t g127/jenkins-casc:2.235.1-lts-alpine .
+docker build -t g127/jenkins-casc:lts-alpine .
+
+# linux test
+docker run \
+      --user jenkins \
+      --hostname ci.topflames.com \
+      --name jenkins-casc \
+      --restart=unless-stopped  \
+      -e SLAVE_AGENT_PORT=32082 \
+      -p 8080:8080 \
+      -p 32082:32082 \
+      -v $HOME/.ssh:/var/jenkins_home/.ssh:ro \
+      -v $HOME/DevProjectFiles/SupportLibrary/.m2/repository:/var/jenkins_home/.m2/repository:rw \
+      -v $HOME/DevProjectFiles/ws-data/jenkins-casc:/var/jenkins_home \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      --group-add=$(stat -c %g /var/run/docker.sock) \
+      --privileged \
+      -d g127/jenkins-casc:lts-alpine
+
+# mac test
+docker run \
+      --user jenkins \
+      --hostname ci.topflames.com \
+      --name jenkins-casc \
+      --restart=unless-stopped  \
+      -e SLAVE_AGENT_PORT=32082 \
+      -p 8080:8080 \
+      -p 32082:32082 \
+      -v $HOME/.ssh:/var/jenkins_home/.ssh:ro \
+      -v $HOME/DevProjectFiles/SupportLibrary/.m2/repository:/var/jenkins_home/.m2/repository:rw \
+      -v $HOME/DevProjectFiles/ws-data/jenkins-casc:/var/jenkins_home \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      --group-add=$(stat -f %g /var/run/docker.sock) \
+      --privileged \
+      -d g127/jenkins-casc:lts-alpine
+
+# push
+docker push g127/jenkins-casc:lts-alpine
+
+# lts-alpine: digest: sha256:e47670000d4f1208643b9e3fcd0cb5a9288474bf8fc5124bb108eb48af9d6fef size: 4499
+
 ```
 
-You can decide which Jenkins version to used by passing the `jenkins_tag` docker build argument like in the following
 ```bash
-docker build --build-arg jenkins_tag=2.252-alpine \
-    -t g127/jenkins-casc:2.252-alpine .
-
-docker build  \
-    -f Dockerfile.nodejs \
-    -t g127/jenkins-casc:lts-alpine-nodejs .
+# 构建
+docker build -f Dockerfile.devops -t g127/jenkins-casc:devops .
 ```
 
 ## jenkins官方修改时区的方法
@@ -59,7 +94,23 @@ docker run \
       -v /var/run/docker.sock:/var/run/docker.sock \
       --group-add=$(stat -c %g /var/run/docker.sock) \
       --privileged \
-      -d g127/jenkins-casc
+      -d g127/jenkins-casc:lts-alpine
+
+docker run \
+      --user jenkins \
+      --hostname ci.topflames.com \
+      --name jenkins-casc \
+      --restart=unless-stopped  \
+      -e SLAVE_AGENT_PORT=32082 \
+      -p 8080:8080 \
+      -p 32082:32082 \
+      -v $HOME/.ssh:/var/jenkins_home/.ssh:ro \
+      -v $HOME/DevProjectFiles/SupportLibrary/.m2/repository:/var/jenkins_home/.m2/repository:rw \
+      -v $HOME/DevProjectFiles/ws-data/jenkins-casc:/var/jenkins_home \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      --group-add=$(stat -f %g /var/run/docker.sock) \
+      --privileged \
+      -d g127/jenkins-casc:lts-alpine-nodejs
 ```
 
 
