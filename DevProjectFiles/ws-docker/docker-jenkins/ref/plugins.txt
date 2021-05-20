@@ -1,59 +1,62 @@
 # 基本插件
 # # 配置代码
-configuration-as-code
-configuration-as-code-support
+configuration-as-code:1.46
 # # 本地化
-localization-zh-cn
+localization-zh-cn:1.0.24
 # # 目录
-cloudbees-folder
+cloudbees-folder:6.15
+# # ssh-agent
+ssh-agent:1.20
 # # 流水线模型
-pipeline-model-definition
-pipeline-utility-steps
-pipeline-maven
-# =workflow-aggregator
+pipeline-model-definition:1.7.2 
+pipeline-utility-steps:2.6.1
+pipeline-maven:3.9.3
+# :workflow-aggregator
 # # 流水线中使用docker
-docker-workflow
+docker-workflow:1.25
 # # 触发器
-generic-webhook-trigger
+generic-webhook-trigger:1.72
 # # 脚本化插件
-scriptler
+scriptler:3.1
 # # 工作节点
-ssh-slaves
+ssh-slaves:1.31.4
 # # kubernetes
-kubernetes
+kubernetes:1.28.4
+# docker
+docker:1.2.1
 
-# # install Notifications and Publishing plugins
- email-ext
- mailer
- slack
+# install Notifications and Publishing plugins
+email-ext:2.80
+mailer:1.32.1
+slack:2.45
+
+# branch
+branch-api:2.6.2
 
 # UI插件
-blueocean
-job-dsl
+blueocean:1.24.1    
+job-dsl:1.77
 
-# 源代码插件
-# # git
-git
-git-changelog
-git-parameter
-violation-comments-to-gitlab
+# 源代码插件 git
+git:4.5.1
+git-changelog:3.0
+git-parameter:0.9.13
+violation-comments-to-gitlab:2.45
 # # svn
-subversion
+subversion:2.13.2
 
 # java mvn 
-maven-plugin
+maven-plugin:3.8
 
 # gradle artifactory
-gradle
-artifactory
+gradle:1.36
+artifactory:3.8.1
 
 # 其他插件
 # # 加解密
-bouncycastle-api
-credentials-binding
-command-launcher
-# # docker，gitee
-docker
-gitee
+bouncycastle-api:2.18
+credentials-binding:1.24    
+command-launcher:1.4
+
 
 

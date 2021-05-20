@@ -4,16 +4,28 @@
 # APP_JAR_NAME=cuiyu-spray-dac-0.0.1-SNAPSHOT.jar
 # --------------------------------------------------------
 # --------------------------------------------------------
-#
+# docker run \
+#   --hostname watergas \
+#   --name watergas \
+#   --restart=unless-stopped  \
+#   -e TZ='Asia/Shanghai' \
+#   -e DIST_JAR=/opt/watergas-service.jar \
+#   -p 8089:8080 \
+#   --link devops-mysql57.default.svc.cluster.local:mysql \
+#   --link devops-redis32.default.svc.cluster.local:redis3 \
+#   --privileged \
+#   --net=app-net \
+#   -d swr.cn-north-4.myhuaweicloud.com/topflames_paas/watergas-service:latest 
 # 
 # docker run \
-#   --hostname app01 \
-#   --name app1 \
+#   --hostname watergas \
+#   --name watergas \
 #   --restart=unless-stopped  \
 #   -e TZ='Asia/Shanghai' \
 #   -e SPRING_PROFILE=prod \
 #   -p 8089:8080 \
-#   --link db-mysql:mysql \
+#   --link devops-mysql57.default.svc.cluster.local:mysql \
+#   --link devops-redis32.default.svc.cluster.local:redis3 \
 #   -v ~/DevProjectFiles/ws-root/:/DevProjectFiles/ws-root/ \
 #   -v ~/tmp/logs/app1:/tmp/logs \
 #   -v ~/tmp/logs/app1:/tmp/java \

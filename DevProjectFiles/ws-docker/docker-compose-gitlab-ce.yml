@@ -2,10 +2,23 @@
 # backup 因操作时间较长，进入到容器中操作
 # docker exec -it gitlab /bin/bash
 # 备份 停掉数据连接服务
-# gitlab-ctl stop unicorn
-# gitlab-ctl stop sidekiq
+# 1 gitlab-ctl stop unicorn
+# 2 gitlab-ctl stop puma
+# 3 gitlab-ctl stop sidekiq
 # 开始备份
 # gitlab-rake gitlab:backup:create
+# gitlab-rake gitlab:backup:create SKIP=builds,artifacts,lfs,registry,pages
+# 可以通过加环境变量skip来选择要备份的内容。可用的选项有:
+#   
+#   db (数据库)
+#   uploads (附件)
+#   repositories (Git repositories 数据)
+#   builds (CI job output logs)
+#   artifacts (CI job artifacts)
+#   lfs (LFS objects)
+#   registry (Container Registry images)
+#   pages (Pages content)
+# 
 # ls -l /var/opt/gitlab/backups
 # 恢复
 # 注：1、到底那个是备份编号？ --- _gitlab之前的部分都是；
@@ -24,78 +37,88 @@
 # https://github.com/gitlab4j/gitlab4j-api
 # 官方仓库
 # https://hub.docker.com/r/gitlab/gitlab-ce
-# --------------------------------------------------------
 #
-# mkdir -p ~/DevProjectFiles/ws-conf/gitlab
-# mkdir -p ~/DevProjectFiles/ws-data/gitlab
+#
+# sudo gitlab-ctl backup-etc
+#
+# --------------------------------------------------------
+# gitlab-backup restore BACKUP=1586312717_2020_04_08_12.9.2
+# 1 gitlab-ctl reconfigure
+# 2 gitlab-ctl restart
+# 3 gitlab-rake gitlab:check SANITIZE=true
+#
+# docker pull gitlab/gitlab-ce:12.10.6-ce.0
+#
+# mkdir -p ~/DevProjectFiles/ws-conf/gitlab/config_backup/
+# mkdir -p ~/DevProjectFiles/ws-data/gitlab/backups
 # mkdir -p ~/tmp/logs/gitlab
 #
-# docker run \
-#   --hostname dev.topflames.com \
-#   --name gitlab \
-#   --restart=unless-stopped  \
-#   -e TZ='Asia/Shanghai' \
-#   -e GITLAB_BACKUP_SCHEDULE='daily' \
-#   -e GITLAB_BACKUP_TIME='01:00' \
-#   -e GITLAB_OMNIBUS_CONFIG="external_url 'http://dev.topflames.com'; gitlab_rails['gitlab_shell_ssh_port'] = 9022; gitlab_rails['time_zone'] = 'Asia/Shanghai';  gitlab_rails['smtp_enable'] = true; gitlab_rails['smtp_address'] = 'smtp.exmail.qq.com'; gitlab_rails['smtp_port'] = 25; gitlab_rails['smtp_user_name'] = 'support@topflames.com'; gitlab_rails['smtp_password'] = 'Tf123456'; gitlab_rails['smtp_domain'] = 'exmail.qq.com'; gitlab_rails['smtp_authentication'] = :plain; gitlab_rails['smtp_enable_starttls_auto'] = true; gitlab_rails['smtp_tls'] = false;  gitlab_rails['gitlab_email_enabled'] = true; gitlab_rails['gitlab_email_from'] = 'support@topflames.com'; gitlab_rails['gitlab_email_display_name'] = '驼峰支持'; gitlab_rails['gitlab_email_reply_to'] = 'support@topflames.com';" \
-#   -p 80:80 \
-#   -p 9022:22 \
-#   --link jenkins-ci:ci.topflames.com \
-#   -v ~/DevProjectFiles/ws-conf/gitlab:/etc/gitlab \
-#   -v ~/DevProjectFiles/ws-data/gitlab:/var/opt/gitlab \
-#   -v ~/tmp/logs/gitlab:/var/log/gitlab \
-#   --privileged \
-#   -d gitlab/gitlab-ce:11.11.8-ce.0
+ ( docker rm -fv gitlab || /bin/true ) && docker run \
+   --hostname dev.topflames.com \
+   --name gitlab \
+   --restart=unless-stopped  \
+   -e TZ='Asia/Shanghai' \
+   -e GITLAB_OMNIBUS_CONFIG="from_file('/etc/gitlab/omnibus_config.rb')" \
+   -p 8022:8022 \
+   -v ~/DevProjectFiles/ws-conf/gitlab:/etc/gitlab \
+   -v ~/DevProjectFiles/ws-data/gitlab:/var/opt/gitlab \
+   -v ~/tmp/logs/gitlab:/var/log/gitlab \
+   --privileged   \
+   --net=app-net  \
+   -d gitlab/gitlab-ce:12.10.6-ce.0
 #
 # --------------------------------------------------------
 version: '2'
 services:
-      image: 'gitlab/gitlab-ce:11.11.8-ce.0'
-      container_name: gitlab
-      restart: unless-stopped
-      hostname: 'dev.topflames.com'
-      environment:
-        TZ: 'Asia/Shanghai'
-        GITLAB_BACKUP_SCHEDULE: 'daily'
-        GITLAB_BACKUP_TIME: '01:00'
-        GITLAB_OMNIBUS_CONFIG: |
-          external_url 'http://dev.topflames.com'
-          # 80 端口改listen_port 和 external_url 也要改
-          nginx['listen_port'] = 80;
-          # 22 端口改这里也要改
-          gitlab_rails['gitlab_shell_ssh_port'] = 9022
-          gitlab_rails['time_zone'] = 'Asia/Shanghai'
-          # 需要配置到 gitlab.rb 中的配置可以在这里配置，每个配置一行，注意缩进。
-          # 比如下面的电子邮件的配置：
-          gitlab_rails['smtp_enable'] = true
-          gitlab_rails['smtp_address'] = 'smtp.exmail.qq.com'
-          gitlab_rails['smtp_port'] = 25
-          gitlab_rails['smtp_user_name'] = 'support@topflames.com'
-          gitlab_rails['smtp_password'] = 'Tf123456'
-          gitlab_rails['smtp_domain'] = 'exmail.qq.com'
-          gitlab_rails['smtp_authentication'] = :plain
-          gitlab_rails['smtp_enable_starttls_auto'] = true
-          gitlab_rails['smtp_tls'] = false
-          # gitlab_email_enabled
-          gitlab_rails['gitlab_email_enabled'] = true
-          gitlab_rails['gitlab_email_from'] = 'support@topflames.com'
-          gitlab_rails['gitlab_email_display_name'] = '驼峰支持'
-          gitlab_rails['gitlab_email_reply_to'] = 'support@topflames.com'
-          # backup
-          # gitlab_rails['manage_backup_path'] = true
-          # gitlab_rails['backup_path'] = '/var/opt/gitlab/backups'
-      ports:
-        - '80:80'
-        #- '443:443'
-        - '9022:22'
-      external_links:
-        - jenkins-ci:ci.topflames.com
-      volumes:
-        - ~/DevProjectFiles/ws-conf/gitlab:/etc/gitlab
-        - ~/DevProjectFiles/ws-data/gitlab:/var/opt/gitlab
-        - ~/tmp/logs/gitlab:/var/log/gitlab
-      networks:
-        - app-net
+  gitlab:
+    image: gitlab/gitlab-ce:12.10.6-ce.0
+    container_name: gitlab
+    restart: unless-stopped
+    hostname: 'dev.tf360.top'
+    environment:
+      TZ: 'Asia/Shanghai'
+      GITLAB_BACKUP_SCHEDULE: 'daily'
+      GITLAB_BACKUP_TIME: '01:00'
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://dev.tf360.top'
+        # 80 端口改listen_port 和 external_url 也要改
+        nginx['listen_port'] = 80;
+        # 22 端口改这里也要改
+        gitlab_rails['gitlab_shell_ssh_port'] = 22
+        gitlab_rails['time_zone'] = 'Asia/Shanghai'
+        # 禁用 GitLab 的 CI/CD
+        gitlab_rails['gitlab_default_projects_features_builds'] = false
+        # 需要配置到 gitlab.rb 中的配置可以在这里配置，每个配置一行，注意缩进。
+        # 比如下面的电子邮件的配置：
+        gitlab_rails['smtp_enable'] = true
+        gitlab_rails['smtp_address'] = 'smtp.exmail.qq.com'
+        gitlab_rails['smtp_port'] = 25
+        gitlab_rails['smtp_user_name'] = 'support@topflames.com'
+        gitlab_rails['smtp_password'] = 'Tf123456'
+        gitlab_rails['smtp_domain'] = 'exmail.qq.com'
+        gitlab_rails['smtp_authentication'] = :plain
+        gitlab_rails['smtp_enable_starttls_auto'] = true
+        gitlab_rails['smtp_tls'] = false
+        # gitlab_email_enabled
+        gitlab_rails['gitlab_email_enabled'] = true
+        gitlab_rails['gitlab_email_from'] = 'support@topflames.com'
+        gitlab_rails['gitlab_email_display_name'] = '驼峰支持'
+        gitlab_rails['gitlab_email_reply_to'] = 'support@topflames.com'
+        # backup
+        # gitlab_rails['manage_backup_path'] = true
+        # gitlab_rails['backup_path'] = '/var/opt/gitlab/backups'
+    ports:
+      - '127.0.0.1:31080:80'
+      #- '443:443'
+      #- '22:22'
+    external_links:
+      - jenkins:ci.tf360.top
+    volumes:
+      - ~/DevProjectFiles/ws-conf/gitlab:/etc/gitlab
+      - ~/DevProjectFiles/ws-data/gitlab:/var/opt/gitlab
+      - ~/tmp/logs/gitlab:/var/log/gitlab
+    networks:
+      - app-net
 networks:
   app-net:
     external:

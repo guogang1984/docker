@@ -44,17 +44,63 @@ version: "2"
 services:
   nginx:
     image: g127/nginx
-    container_name: web-nginx
+    container_name: nginx
     restart: unless-stopped
-    #ports:
-    #  - '80:8080'
+    environment:
+      HTTP_PROXY_1: 'dev.tf360.top:80'
+      HTTP_PROXY_1_BACKEND_URL: '127.0.0.1:31080'
+      HTTP_PROXY_2: 'ci.tf360.top:80'
+      HTTP_PROXY_2_BACKEND_URL: 'ci.tf360.top:8080'
+#    ports:
+#     - '80:80'
+#    external_links:
+#      - gitlab:dev.tf360.top
+#      - jenkins:ci.tf360.top
     volumes:
       # fixed UTC+8 localtime problem
       # - ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro
       # nginx conf default path
-      - ~/DevProjectFiles/ws-conf/nginx/:/usr/local/openresty/nginx/conf/
+      # - ~/DevProjectFiles/ws-conf/nginx/:/usr/local/openresty/nginx/conf/
       # nginx root  default path
       - ~/DevProjectFiles/ws-root/:/DevProjectFiles/ws-root/
       # nginx logs  default path     
       - ~/tmp/logs/nginx:/usr/local/openresty/nginx/logs
     network_mode: "host"
+#    networks:
+#      - app-net
+#networks:
+#  app-net:
+#    external:
+#      name: app-net
+
+###
+version: "2"
+services:
+  nginx:
+    image: g127/nginx
+    container_name: nginx
+    restart: unless-stopped
+    environment:
+      HTTP_1: 'www.app.com:80'
+      HTTP_1_APP_SERVICE: 'xzoa-service'
+      HTTP_1_TARGET_NAME: 'cluster-tomcat'
+      HTTP_2: 'beta.app.com:8088'
+      HTTP_2_APP_SERVICE: 'xzoa-service'
+      HTTP_2_TARGET_NAME: 'cluster-dev-tomcat'
+    ports:
+     - '80:80'
+     - '8088:8088'
+    external_links:
+      - web1:web1
+    volumes:
+      # nginx root  default path
+      - ~/DevProjectFiles/ws-root/:/DevProjectFiles/ws-root/
+      # nginx logs  default path     
+      - ~/tmp/logs/nginx:/usr/local/openresty/nginx/logs
+    # network_mode: "host"
+    networks:
+      - app-net
+networks:
+  app-net:
+    external:
+      name: app-net

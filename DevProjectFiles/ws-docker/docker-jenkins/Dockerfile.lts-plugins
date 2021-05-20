@@ -1,0 +1,48 @@
+FROM jenkins/jenkins:lts-alpine
+
+MAINTAINER gg  <guogang1984@gmail.com>
+
+USER root
+
+ENV TZ=Asia/Shanghai \
+    SLAVE_AGENT_PORT=50000 \
+    CASC_JENKINS_CONFIG=$JENKINS_HOME/casc_configs \
+    JAVA_OPTS=" -Djava.security.egd=file:/dev/./urandom -Duser.timezone=GMT+08 -Dorg.apache.commons.jelly.tags.fmt.timeZone=GMT+08 -Djenkins.install.runSetupWizard=false "
+
+# install-plugins
+COPY ref/install-plugins-customize.sh /usr/local/bin/install-plugins.sh
+
+# Plugins
+# the grep command allows to ignore all comments in the plugins.txt file
+COPY ref/plugins.txt /usr/share/jenkins/ref/plugins.txt
+
+# Configuration-as-code
+COPY ref/casc_configs/ /usr/share/jenkins/ref/casc_configs/
+
+RUN echo 'run script' \
+    # add jenkins user
+    && addgroup jenkins root && echo $(id jenkins) \
+    # exec install-plugins
+    && xargs install-plugins.sh `grep -v '^#' /usr/share/jenkins/ref/plugins.txt` \
+    && echo 'run script finish'
+
+USER jenkins
+
+# Disable signature checking on DownloadService
+#ENV JAVA_OPTS -Dhudson.model.DownloadService.noSignatureCheck=true
+# ENTRYPOINT
+ENTRYPOINT ["tini", "--", "/usr/local/bin/jenkins.sh"]
+
+
+# 构建
+# docker build -f Dockerfile.lts-plugins -t g127/jenkins:lts-plugins .
+# 启动并查看
+# docker run -it --rm  --name jenkins-lts-plugins g127/jenkins:lts-plugins /bin/bash
+# 启动(后台)
+# docker run -it --rm  --name jenkins-lts-plugins -d g127/jenkins:lts-plugins
+# 拷贝
+# docker cp jenkins-lts-plugins:/usr/share/jenkins/ref/plugins ./ref/lts-plugins.new
+# 删除容器
+# docker rm -fv jenkins-lts-plugins
+# 推送
+# docker push g127/jenkins:lts-plugins

@@ -1,0 +1,38 @@
+# docker run \
+#       --user jenkins \
+#       --name jenkins-worker \
+#       --restart=unless-stopped  \
+#       --init \
+#       -e JENKINS_URL=http://ci.tf360.com:80 \
+#       -e JENKINS_SECRET=3b1bda922c06c10ceaa258f2b177391d2244ae8d1b0ff40c3f93ecffd5e7f93e \
+#       -e JENKINS_AGENT_NAME=win-185 \
+#       -v D:/DevProjectFiles/SupportLibrary/.m2/repository:/home/jenkins/.m2/repository:rw \
+#       -v D://DevProjectFiles/ws-data/jenkins-worker:/home/jenkins \
+#       --privileged \
+#       -d g127/jenkins-worker:alpine 
+
+version: '2'
+services:
+  jenkins:
+    image: 'g127/jenkins-worker:devops'
+    container_name: jenkins-worker
+    privileged: true
+    user: jenkins
+    restart: unless-stopped
+    environment:
+      JENKINS_URL: http://192.168.188.188
+      JENKINS_SECRET: ce60e501faeca76f4f9ec4ad6d285e790c13487941bdeecaf0c43f31adadb807
+      JENKINS_AGENT_NAME: win-docker-185
+    volumes:
+      - D:/DevProjectFiles/SupportLibrary/.m2/repository:/home/jenkins/.m2/repository:rw
+      - D:/DevProjectFiles/ws-data/jenkins-worker:/home/jenkins
+    # ports:
+    #   - "32080:8080"
+    #   - "32082:32082"
+    #   - "50000:50000"
+    networks:
+      - app-net
+networks:
+  app-net:
+    external:
+      name: app-net

@@ -1,30 +1,21 @@
-# The MIT License
-#
-#  Copyright (c) 2015-2020, CloudBees, Inc. and other Jenkins contributors
-#
-#  Permission is hereby granted, free of charge, to any person obtaining a copy
-#  of this software and associated documentation files (the "Software"), to deal
-#  in the Software without restriction, including without limitation the rights
-#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#  copies of the Software, and to permit persons to whom the Software is
-#  furnished to do so, subject to the following conditions:
-#
-#  The above copyright notice and this permission notice shall be included in
-#  all copies or substantial portions of the Software.
-#
-#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-#  THE SOFTWARE.
+FROM g127/java as builder
 
-# FROM openjdk:8-jdk-alpine3.9
-FROM g127/java
+RUN echo "ok"
+
+FROM jenkins/jenkins:lts-alpine
+
+USER root
+
+# env
+ENV TZ=Asia/Shanghai \
+    PATH=${PATH}:/opt/maven/bin:/opt/gradle/bin:/opt/java/bin \
+    SLAVE_AGENT_PORT=50000 \
+    CASC_JENKINS_CONFIG=$JENKINS_HOME/casc_configs \
+    JAVA_OPTS=" -Djava.security.egd=file:/dev/./urandom -Duser.timezone=GMT+08 -Dorg.apache.commons.jelly.tags.fmt.timeZone=GMT+08 -Djenkins.install.runSetupWizard=false "
+
 
 # nodejs begin https://github.com/nodejs/docker-node/tree/master/14/alpine3.10
-ENV NODE_VERSION 14.15.1
+ENV NODE_VERSION 14.14.0
 
 RUN addgroup -g 2000 node \
     && adduser -u 2000 -G node -s /bin/sh -D node \
@@ -36,7 +27,7 @@ RUN addgroup -g 2000 node \
       && case "${alpineArch##*-}" in \
         x86_64) \
           ARCH='x64' \
-          CHECKSUM="eec29c217b423618d3ec2be597ce34667c285363373b58783b77fa34a59a8ef1" \
+          CHECKSUM="03e07b7e8d1c0aee204a4db53d9e84748623d2498476226b68eaaf61280a2e59" \
           ;; \
         *) ;; \
       esac \
@@ -121,28 +112,12 @@ RUN apk add --no-cache --virtual .build-deps-yarn curl gnupg tar \
 # nodejs end
 
 
-ARG VERSION=4.3
-ARG user=jenkins
-ARG group=jenkins
-ARG uid=1000
-ARG gid=1000
+COPY --from=builder /opt /opt
 
-RUN addgroup -g ${gid} ${group}
-RUN adduser -h /home/${user} -u ${uid} -G ${group} -D ${user}
-
-# LABEL Description="This is a base image, which provides the Jenkins agent executable (slave.jar)" Vendor="Jenkins project" Version="${VERSION}"
-LABEL Description="This is a base image, which allows connecting Jenkins agents via JNLP protocols" Vendor="Jenkins project" Version="${VERSION}"
-
-ARG AGENT_WORKDIR=/home/${user}/agent
-
-COPY jenkins-agent /usr/local/bin/jenkins-agent
-
-#
 RUN echo 'run script' \
     # setting apk mirror
     # && sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories \
     && sed -i 's/mirrors.tuna.tsinghua.edu.cn/dl-cdn.alpinelinux.org/g' /etc/apk/repositories \
-    && TSINGHUA_MIRROR=https://mirrors.tuna.tsinghua.edu.cn \
     && apk update \
     # curl
     && apk add --upgrade curl && curl --version \
@@ -154,12 +129,16 @@ RUN echo 'run script' \
     && apk add --upgrade rsync && rsync --version \
     # ansible
     && apk add --upgrade ansible && mkdir -p /etc/ansible && echo "localhost" >/etc/ansible/hosts && ansible --version \
+    # ansible ssh 密码方式需要sshpass
+    && apk add --upgrade sshpass \
     # packer
     && apk add --upgrade packer --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing && packer --version \
     # packer
     && apk add --upgrade terraform --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community && terraform --version \
     # mvn
     && mvn --version \
+    # gradle
+    && gradle --version \
     # jmeter https://mirrors.tuna.tsinghua.edu.cn/apache/jmeter/binaries/apache-jmeter-5.2.1.zip
     #&& JMETER_DL_URL=${TSINGHUA_MIRROR}/apache/jmeter/binaries/apache-jmeter-5.2.1.tgz \
     && JMETER_DL_URL=https://downloads.apache.org/jmeter/binaries/apache-jmeter-5.2.1.tgz \
@@ -175,29 +154,39 @@ RUN echo 'run script' \
     && mv /tmp/docker/* /usr/local/bin/ \
     && docker -v \
     # init folder
-    && export SWITCH_RUN=init && /opt/docker-entrypoint.sh 
+    && export SWITCH_RUN=init && /opt/docker-entrypoint.sh
 
-#
-RUN echo 'run script' \
-    # jenkins-remoting
-    && curl --create-dirs -fsSLo /usr/share/jenkins/agent.jar https://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/${VERSION}/remoting-${VERSION}.jar \
-    && chmod 755 /usr/share/jenkins \
-    && chmod 644 /usr/share/jenkins/agent.jar \
-    && ln -sf /usr/share/jenkins/agent.jar /usr/share/jenkins/slave.jar \
-    && chmod +x /usr/local/bin/jenkins-agent \
-    && ln -s /usr/local/bin/jenkins-agent /usr/local/bin/jenkins-slave \
-    && chown -R jenkins:jenkins /home/${user} \
-    && addgroup jenkins root && echo $(id jenkins) 
+ENV PATH=${PATH}:/opt/apache-jmeter/bin
 
-USER ${user}
-ENV AGENT_WORKDIR=${AGENT_WORKDIR} \
-    PATH=${PATH}:/opt/jmeter/bin 
 
-RUN mkdir /home/${user}/.jenkins && mkdir -p ${AGENT_WORKDIR} &&  \
-    mkdir /home/${user}/.m2 
+# Copy casc_configs Configuration-as-code
+COPY ref/casc_configs/ /usr/share/jenkins/ref/casc_configs/
 
-VOLUME /home/${user}/.jenkins
-VOLUME ${AGENT_WORKDIR}
-WORKDIR /home/${user}
+# Copy init.groovy.d
+COPY ref/init.groovy.d/ /usr/share/jenkins/ref/init.groovy.d/
 
-ENTRYPOINT ["jenkins-agent"]
+# Copy Plugins
+COPY ref/plugins/ /usr/share/jenkins/ref/plugins/
+
+USER jenkins
+
+ENV TZ=Asia/Shanghai \
+    PATH=${PATH}:/usr/local/bin:/opt/maven/bin:/opt/gradle/bin:/opt/java/bin:/opt/apache-jmeter/bin
+# Disable signature checking on DownloadService
+#ENV JAVA_OPTS -Dhudson.model.DownloadService.noSignatureCheck=true
+
+# ENTRYPOINT
+ENTRYPOINT ["tini", "--", "/usr/local/bin/jenkins.sh"]
+
+# 构建
+# docker build -f Dockerfile.lts-devops -t g127/jenkins:lts-devops .
+# 启动并查看
+# docker run -it --rm  --name jenkins-devops g127/jenkins:lts-devops /bin/bash
+# 启动(后台)
+# docker run -it --rm  --name jenkins -p 8080:8080 -v $(pwd)/.jenkins_home:/var/jenkins_home -d g127/jenkins:lts-devops
+# 测试插件
+# docker run -it --rm  --name jenkins -p 8080:8080 -v `pwd`/ref/plugins:/usr/share/jenkins/ref/plugins  -d g127/jenkins:lts-devops
+# 删除容器
+# docker rm -fv jenkins-devops
+# 推送
+# docker push g127/jenkins:lts-devops

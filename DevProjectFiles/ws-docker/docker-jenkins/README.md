@@ -45,6 +45,11 @@ docker push g127/jenkins-casc:lts-alpine
 
 # lts-alpine: digest: sha256:e47670000d4f1208643b9e3fcd0cb5a9288474bf8fc5124bb108eb48af9d6fef size: 4499
 
+
+docker run --rm -p 127.0.0.1:8080:8080 -v /var/run/docker.sock:/var/run/docker.sock --group-add=$(stat -f %g /var/run/docker.sock) g127/jenkins:devops
+
+/usr/local/bin/docker
+
 ```
 
 ```bash
@@ -115,31 +120,38 @@ docker run \
 
 
 ###  huawei swr 推送具体
-# 
-docker login -u cn-north-4@QG3PAJLYR3JYH04Q2LXG -p feae912f408ccbf6cd50a085c31bfaf15b86c4e374a3b5186691f279c6e1fcfa swr.cn-north-4.myhuaweicloud.com
+```
+    docker login \
+        -u cn-north-4@QG3PAJLYR3JYH04Q2LXG \
+        -p feae912f408ccbf6cd50a085c31bfaf15b86c4e374a3b5186691f279c6e1fcfa \
+        swr.cn-north-4.myhuaweicloud.com 
 
-#
-docker tag g127/jenkins-casc swr.cn-north-4.myhuaweicloud.com/g127/jenkins-casc
+    docker tag g127/jenkins:lts-devops swr.cn-north-4.myhuaweicloud.com/g127/jenkins:lts-devops
 
-#
-docker push swr.cn-north-4.myhuaweicloud.com/g127/jenkins-casc
+    docker push swr.cn-north-4.myhuaweicloud.com/g127/jenkins:lts-devops       
 
+```
 
 # 驼峰公司服务器上使用的
-docker run  \
+```
+( docker rm -fv jenkins || /bin/true ) && docker run \
       --user jenkins \
       --hostname ci.topflames.com \
-      --name jenkins-casc \
+      --name jenkins \
       --restart=unless-stopped  \
       -e SLAVE_AGENT_PORT=32082 \
-      -p 127.0.0.1:8080:8080 \
+      -p 32080:8080 \
       -p 32082:32082 \
       -v $HOME/.ssh:/var/jenkins_home/.ssh:ro \
-      -v $HOME/DevProjectFiles/SupportLibrary/.m2/repository:/var/jenkins_home/.m2/repository:rw \
-      -v $HOME/DevProjectFiles/ws-data/jenkins-casc:/var/jenkins_home \
-      -v /var/run/docker.sock:/var/run/docker.sock   \
+      -v $HOME/DevProjectFiles/SupportLibrary/.m2/repository:/var/enkins_home/.m2/repository:rw \
+      -v $HOME/DevProjectFiles/SupportLibrary/.m2/repository:/DevProjectFilesSupportLibrary/.m2/repository:rw \
+      -v $HOME/DevProjectFiles/ws-data/jenkins:/var/jenkins_home \
+      -v /var/run/docker.sock:/var/run/docker.sock \
       --group-add=$(stat -c %g /var/run/docker.sock) \
       --link gitlab:dev.topflames.com  \
+      --link gitlab:dev.tf360.top  \
       --privileged   \
-      --net=topflames-net  \
-      -d g127/jenkins-casc
+      --net=app-net  \
+      -d g127/jenkins:lts-devops
+
+```

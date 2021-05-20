@@ -1,6 +1,5 @@
 #!/bin/bash
 
-export GITLAB_PERSONAL_ACCESS_TOKEN=$(cat ../gitlab-docker/setup/personal-access-token.txt)
 export DOCKER_JENKINS_NAME=jenkins
 export M2_DIR=$HOME/DevProjectFiles/SupportLibrary/.m2
 export M2_REPO=$HOME/DevProjectFiles/SupportLibrary/.m2/repository
@@ -14,8 +13,6 @@ echo -  Docker: `docker -v`
 echo -
 echo -  Using Properties:
 echo -
-echo -    docker env
-echo -      - GITLAB_PERSONAL_ACCESS_TOKEN=$GITLAB_PERSONAL_ACCESS_TOKEN
 echo -    docker volume 
 echo -      - $M2_REPO:/var/jenkins_home/.m2/repository:rw
 echo -      - $JENKINS_DATA:/var/jenkins_home
@@ -57,7 +54,6 @@ docker run \
   -p $PORT_8080:8080 \
   -p $PORT_50000:$PORT_50000 \
   -e SLAVE_AGENT_PORT=$PORT_50000 \
-  -e GITLAB_PERSONAL_ACCESS_TOKEN=$GITLAB_PERSONAL_ACCESS_TOKEN \
   -v $HOME/.ssh:/var/jenkins_home/.ssh:ro \
   -v $M2_DIR:/var/jenkins_home/.m2:rw \
   -v $JENKINS_DATA:/var/jenkins_home \

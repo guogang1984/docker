@@ -1,0 +1,135 @@
+version_info: "0"
+resources:
+# topflames.com
+- "@type": type.googleapis.com/envoy.config.cluster.v3.Cluster
+  name: topflames
+  connect_timeout: 1.25s
+  type: strict_dns
+  lb_policy: round_robin
+  load_assignment:
+    cluster_name: topflames
+    endpoints:
+    - lb_endpoints:
+      - endpoint:
+          address:
+            socket_address:
+              address: topflames
+              port_value: 80
+
+# jenkins ci.topflames.com
+- "@type": type.googleapis.com/envoy.config.cluster.v3.Cluster
+  name: ci
+  connect_timeout: 1.25s
+  type: strict_dns
+  lb_policy: round_robin
+  load_assignment:
+    cluster_name: ci
+    endpoints:
+    - lb_endpoints:
+      - endpoint:
+          address:
+            socket_address:
+              # address: host.docker.internal
+              address: 172.18.0.1
+              port_value: 18880
+
+# gitlab dev.topflames.com
+- "@type": type.googleapis.com/envoy.config.cluster.v3.Cluster
+  name: gitlab
+  connect_timeout: 1.25s
+  type: strict_dns
+  lb_policy: round_robin
+  load_assignment:
+    cluster_name: gitlab
+    endpoints:
+    - lb_endpoints:
+      - endpoint:
+          address:
+            socket_address:
+              address: gitlab
+              port_value: 80
+
+# lktoa
+- "@type": type.googleapis.com/envoy.config.cluster.v3.Cluster
+  name: lktoa
+  connect_timeout: 1.25s
+  type: strict_dns
+  lb_policy: round_robin
+  load_assignment:
+    cluster_name: lktoa
+    endpoints:
+    - lb_endpoints:
+      - endpoint:
+          address:
+            socket_address:
+              address: 61.183.117.126
+              port_value: 8088
+
+# watergas
+- "@type": type.googleapis.com/envoy.config.cluster.v3.Cluster
+  name: watergas
+  connect_timeout: 1.25s
+  type: strict_dns
+  lb_policy: round_robin
+  load_assignment:
+    cluster_name: watergas
+    endpoints:
+    - lb_endpoints:
+      - endpoint:
+          address:
+            socket_address:
+              address: watergas
+              port_value: 80
+
+# lkyoa
+- "@type": type.googleapis.com/envoy.config.cluster.v3.Cluster
+  name: lkyoa
+  connect_timeout: 1.25s
+  type: strict_dns
+  lb_policy: round_robin
+  load_assignment:
+    cluster_name: lkyoa
+    endpoints:
+    - lb_endpoints:
+      - endpoint:
+          address:
+            socket_address:
+              address: lkyoa
+              port_value: 80
+# backend
+- "@type": type.googleapis.com/envoy.config.cluster.v3.Cluster
+  name: backend
+  connect_timeout: 1.25s
+  type: strict_dns
+  lb_policy: round_robin
+  load_assignment:
+    cluster_name: backend
+    endpoints:
+    - lb_endpoints:
+      - endpoint:
+          address:
+            socket_address:
+              address: backend
+              port_value: 8080
+#
+# - "@type": type.googleapis.com/envoy.api.v3.Cluster
+#   name: service-https           
+#   connect_timeout: 0.25s
+#   type: strict_dns
+#   lb_policy: round_robin
+#   load_assignment:
+#     cluster_name: service-https
+#     endpoints:
+#     - lb_endpoints:
+#       - endpoint:
+#           address:
+#             socket_address:
+#               address: service-https
+#               port_value: 443
+#   transport_socket:
+#     name: envoy.transport_sockets.tls
+#     typed_config:
+#       "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+#   http2_protocol_options:
+#     initial_stream_window_size: 65536 # 64 KiB
+#     initial_connection_window_size: 1048576 # 1 MiB

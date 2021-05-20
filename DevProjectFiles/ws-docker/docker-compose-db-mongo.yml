@@ -1,20 +1,22 @@
 # --------------------------------------------------------
-# docker pull mongo:3.4
+# docker pull mongo:4.2
 # docker run \
 #   --hostname mongo \
 #   --name db-mongo \
 #   --restart=unless-stopped  \
+#   -e MONGO_INITDB_ROOT_USERNAME=root \
+#   -e MONGO_INITDB_ROOT_PASSWORD=root \
 #   -p 27017:27017 \
 #   -v /etc/localtime:/etc/localtime:ro \
 #   -v /home/dev/DevProjectFiles/ws-data/mongo:/data \
 #   --privileged \
 #   --net=app-net \
-#   -d mongo:3.4
+#   -d mongo:4.2
 # --------------------------------------------------------
 version: "2"
 services:
   mongo:
-    image: 'mongo:3.4'
+    image: 'mongo:4.2'
     container_name: db-mongo
     restart: unless-stopped
     ports:

@@ -1,7 +1,121 @@
-# docker run \
-#   --name elasticsearch \
-#   --net app-net \
-#   -p 9200:9200 \
-#   -p 9300:9300 \
-#   -e "discovery.type=single-node" \
-#   -d elasticsearch:6.8.0
+# https://www.cnblogs.com/woshimrf/p/docker-es7.html
+# https://github.com/Ryan-Miao/docker-china-source/tree/master/docker-elasticsearch
+#
+#
+# sudo docker run -dit --name=es elasticsearch:7.6.2 /bin/bash
+# sudo docker exec -it es /bin/bash
+# ./bin/elasticsearch-certutil ca
+# ./bin/elasticsearch-certutil cert --ca elastic-stack-ca.p12
+# sudo docker cp es:/usr/share/elasticsearch/elastic-certificates.p12 .
+# sudo docker kill es
+# sudo docker rm es
+#
+#Changed password for user apm_system
+#PASSWORD apm_system = 8s5BP8n7wTehy0vnA9L8
+#
+#Changed password for user kibana
+#PASSWORD kibana = tGIk6pUsy0BeeAkZWMUJ
+#
+#Changed password for user logstash_system
+#PASSWORD logstash_system = oGyfS5ZQIs9c87PfZ19g
+#
+#Changed password for user beats_system
+#PASSWORD beats_system = Ct2DBN9s193XKvDcJ12u
+#
+#Changed password for user remote_monitoring_user
+#PASSWORD remote_monitoring_user = WxWasd6RM0xVKyBmXRIe
+#
+#Changed password for user elastic
+#PASSWORD elastic = jeEFfmVnTqo7uZtEpjWg
+version: '2.2'
+services:
+  es01:
+    image: elasticsearch:7.6.2
+    container_name: es01
+    environment:
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ~/DevProjectFiles/ws-conf/es/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ~/DevProjectFiles/ws-conf/es/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+      - ~/DevProjectFiles/ws-data/es/01:/usr/share/elasticsearch/data
+      - ~/tmp/logs/es/01:/usr/share/elasticsearch/logs
+    ports:
+      - 9200:9200
+    networks:
+      - elastic
+
+  es02:
+    image: elasticsearch:7.6.2
+    container_name: es02
+    environment:
+      - node.name=es02
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es01,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ~/DevProjectFiles/ws-conf/es/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ~/DevProjectFiles/ws-conf/es/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+      - ~/DevProjectFiles/ws-data/es/02:/usr/share/elasticsearch/data
+      - ~/tmp/logs/es/02:/usr/share/elasticsearch/logs
+    ports:
+      - 9201:9200
+    networks:
+      - elastic
+
+  es03:
+    image: elasticsearch:7.6.2
+    container_name: es03
+    environment:
+      - node.name=es03
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es01,es02
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ~/DevProjectFiles/ws-conf/es/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ~/DevProjectFiles/ws-conf/es/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+      - ~/DevProjectFiles/ws-data/es/03:/usr/share/elasticsearch/data
+      - ~/tmp/logs/es/03:/usr/share/elasticsearch/logs
+    ports:
+      - 9202:9200
+    networks:
+      - elastic
+
+  kib01:
+    depends_on: 
+      - es01
+    image: kibana:7.6.2
+    container_name: kib01
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_URL: http://es01:9200
+      ELASTICSEARCH_HOSTS: http://es01:9200
+    volumes:
+      - ~/DevProjectFiles/ws-conf/es-kibana/kibana.yml:/usr/share/kibana/config/kibana.yml
+    networks:
+      - elastic
+
+networks:
+  elastic:
+    driver: bridge

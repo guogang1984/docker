@@ -3,20 +3,6 @@
 # This may also be found at: /var/jenkins_home/secrets/initialAdminPassword
 # cat ~/DevProjectFiles/ws-conf/jenkins/secrets/initialAdminPassword
 #
-# docker run \
-#   --user root \
-#   --hostname ci.topflames.com \
-#   --name jenkins-ci \
-#   --restart=unless-stopped  \
-#   -e TZ='Asia/Shanghai' \
-#   -p 8080:8080 \
-#   -p 50000:50000 \
-#   --link gitlab:dev.topflames.com \
-#   -v ~/DevProjectFiles/ws-conf/alpine/etc/localtime:/etc/localtime:ro  \
-#   -v ~/DevProjectFiles/ws-conf/jenkins:/var/jenkins_home \
-#   --privileged \
-#   --net=app-net \
-#   -d jenkins/jenkins:lts-alpine
 #
 # docker stop jenkins && docker rm  -fv jenkins
 # docker rm -fv jenkins
@@ -27,41 +13,56 @@
 #     println ("${plugin.getDisplayName()} (${plugin.getShortName()}): ${plugin.getVersion()}")
 # }
 #
-# docker run \
-#       --user jenkins \
-#       --hostname ci.topflames.com \
-#       --name jenkins-casc \
-#       --restart=unless-stopped  \
-#       -e SLAVE_AGENT_PORT=32082 \
-#       -p 8080:8080 \
-#       -p 32082:32082 \
-#       -v $HOME/.ssh:/var/jenkins_home/.ssh:ro \
-#       -v $HOME/DevProjectFiles/SupportLibrary/.m2/repository:/var/jenkins_home/.m2/repository:rw \
-#       -v $HOME/DevProjectFiles/ws-data/jenkins-casc:/var/jenkins_home \
-#       -v /var/run/docker.sock:/var/run/docker.sock \
-#       --group-add=$(stat -c %g /var/run/docker.sock) \
-#       --privileged \
-#       -d g127/jenkins-casc
+# ( docker rm -fv jenkins || /bin/true ) && docker run \
+#     --user jenkins \
+#     --hostname ci.topflames.com \
+#     --name jenkins \
+#     --restart=unless-stopped  \
+#     -e SLAVE_AGENT_PORT=32082 \
+#     -p 32080:8080 \
+#     -p 32082:32082 \
+#     -v $HOME/.ssh:/var/jenkins_home/.ssh:ro \
+#     -v $HOME/DevProjectFiles/SupportLibrary/.m2/repository:/var/enkins_home/.m2/repository:rw \
+#     -v $HOME/DevProjectFiles/SupportLibrary/.m2/repository:/DevProjectFilesSupportLibrary/.m2/repository:rw \
+#     -v $HOME/DevProjectFiles/ws-data/jenkins:/var/jenkins_home \
+#     -v /var/run/docker.sock:/var/run/docker.sock \
+#     --group-add=$(stat -c %g /var/run/docker.sock) \
+#     --link gitlab:dev.topflames.com  \
+#     --link gitlab:dev.tf360.top  \
+#     --privileged   \
+#     --net=app-net  \
+#     -d g127/jenkins:lts-devops
+#
+#  手工添加docker执行权限,使用root登录后，增加用户组后，必需重启
+#  docker exec -it -u root jenkins bash
+#  addgroup -g $(stat -c %g /var/run/docker.sock) docker && addgroup jenkins docker
+#  docker stop jenkins
+#  docker start jenkins
 
 version: '2'
 services:
   jenkins:
-    image: 'g127/jenkins-casc'
-    container_name: jenkins-casc
-    hostname: 'ci.topflames.com'
+    image: 'g127/jenkins:lts-devops'
+    container_name: jenkins
+    privileged: true
+    user: jenkins
+    hostname: 'ci.tf360.top'
     restart: unless-stopped
     environment:
       SLAVE_AGENT_PORT: 32082
     volumes:
-      - home/dev/.ssh:/var/jenkins_home/.ssh:ro
-      - home/dev/DevProjectFiles/SupportLibrary/.m2/repository:/var/jenkins_home/.m2/repository:rw
-      - home/dev/DevProjectFiles/ws-data/jenkins-casc:/var/jenkins_home
+      - /home/dev/.ssh:/var/jenkins_home/.ssh:ro
+      - /home/dev/DevProjectFiles/SupportLibrary/.m2/repository:/var/jenkins_home/.m2/repository:rw
+      - /home/dev/DevProjectFiles/SupportLibrary/.m2/repository:/DevProjectFiles/SupportLibrary/.m2/repository
+      - /home/dev/DevProjectFiles/ws-data/jenkins:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
-      - "8080:8080"
-      - "50000:50000"
+      - "32080:8080"
+      - "32082:32082"
+      # - "50000:50000"
     external_links:
         - gitlab:dev.topflames.com
+        - gitlab:dev.tf360.top
     networks:
       - app-net
 networks:

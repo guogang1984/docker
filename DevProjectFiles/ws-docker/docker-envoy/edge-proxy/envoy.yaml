@@ -1,0 +1,52 @@
+# envoy.yaml
+node:
+  cluster: app-cluster-0
+  id: app-id-0
+
+dynamic_resources:
+  lds_config:
+    path: /etc/envoy/envoy-lds.yaml
+  cds_config:
+    path: /etc/envoy/envoy-cds.yaml
+
+admin:
+  access_log_path: "/dev/stdout"
+  address:
+    socket_address:
+      address: "::"
+      ipv4_compat: true
+      port_value: 15001
+
+
+overload_manager:
+  refresh_interval: 0.25s
+  resource_monitors:
+  - name: "envoy.resource_monitors.fixed_heap"
+    typed_config:
+      "@type": type.googleapis.com/envoy.config.resource_monitor.fixed_heap.v2alpha.FixedHeapConfig
+      # TODO: Tune for your system.
+      max_heap_size_bytes: 2147483648 # 2 GiB
+  actions:
+  - name: "envoy.overload_actions.shrink_heap"
+    triggers:
+    - name: "envoy.resource_monitors.fixed_heap"
+      threshold:
+        value: 0.95
+  - name: "envoy.overload_actions.stop_accepting_requests"
+    triggers:
+    - name: "envoy.resource_monitors.fixed_heap"
+      threshold:
+        value: 0.98
+
+layered_runtime:
+  layers:
+    - name: static_layer_0
+      static_layer:
+        envoy:
+          resource_limits:
+            listener:
+              example_listener_name:
+                connection_limit: 10000
+        overload:
+          # there is no configured limit to the number of allowed active connections. Set a limit via the runtime key overload.global_downstream_max_connections
+          global_downstream_max_connections: 50000

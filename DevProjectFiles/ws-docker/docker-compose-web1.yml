@@ -31,22 +31,24 @@ services:
     container_name: web1
     restart: unless-stopped
     environment:
-      TZ: 'Asia/Shanghai'
-      CATALINA_TMPDIR : '/tmp/java/tmp'
-      CATALINA_APPBASE : '/DevProjectFiles/ws-root/webapps-18081'
-      JAVA_OPTS : ' -Djava.io.tmpdir=/tmp/java/tmp -Djava.security.egd=file:/dev/./urandom -Duser.timezone=GMT+08 -server -Xms1024m -Xmx2048m -XX:PermSize=256m -XX:MaxPermSize=512m '
+      # CATALINA_APPBASE : '/DevProjectFiles/ws-root/webapps-18081'
+      # JAVA_OPTS : ' -Djava.io.tmpdir=/tmp/web/tmp.java -Djava.security.egd=file:/dev/./urandom -Duser.timezone=GMT+08 -server -Xms1024m -Xmx2048m -XX:PermSize=256m -XX:MaxPermSize=512m '
+      SWITCH_RUN: tomcat
+      CATALINA_NO: 18081
+      CATALINA_REDIS_HOSTS: redis3:6379
+      # CATALINA_REDIS_HOSTS: redis3-2:6379
     ports:
       - '127.0.0.1:18081:8080'
+      # - '127.0.0.1:18082:8080'
+      # - '127.0.0.1:28081:8080'
+      # - '127.0.0.1:28082:8080'
     external_links:
       - db-mysql:mysql
       - db-redis3-1:redis3
     volumes:
-      - ~/DevProjectFiles/ws-conf/tomcat8/context.xml.redis:/opt/tomcat/conf/context.xml
-      - ~/DevProjectFiles/ws-conf/tomcat8/localhost18081:/opt/tomcat/conf/Catalina/localhost
       - ~/DevProjectFiles/ws-root/:/DevProjectFiles/ws-root/
+      - ~/tmp/logs/web1:/tmp/web 
       - ~/tmp/logs/web1:/tmp/logs
-      - ~/tmp/logs/web1:/tmp/java
-      - ~/tmp/logs/web1:/logs
     command: "/opt/tomcat/bin/catalina.sh run"
     networks:
       - app-net

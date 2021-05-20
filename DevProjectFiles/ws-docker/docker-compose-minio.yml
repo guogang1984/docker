@@ -1,0 +1,25 @@
+---
+version: "2"
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      # 内外网端口映射 20882-64022
+      - "20882:9000"
+    # volumes: 
+    #   - "./data:/data"
+    environment:
+      MINIO_ACCESS_KEY: "AKIAIOSFODNN7EXAMPLE"
+      MINIO_SECRET_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      # MINIO_HOST:
+      # MINIO_PORT:  
+    # command: server --address "${MINIO_HOST}:${MINIO_PORT}" /data
+    command: server /data
+    restart: always
+    networks:
+      - app-net
+networks:
+  app-net:
+    external:
+      name: app-net

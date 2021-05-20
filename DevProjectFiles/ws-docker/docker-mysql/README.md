@@ -1,5 +1,4 @@
 
-# docker build -t g127/mysql:5.7 .
 
 docker run \
   --hostname mysql \

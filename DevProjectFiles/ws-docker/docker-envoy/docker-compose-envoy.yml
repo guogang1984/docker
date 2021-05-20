@@ -1,0 +1,42 @@
+# docker-compose.yml
+# docker pull envoyproxy/envoy-alpine:v1.17.0
+# docker run \
+#   --name gateway \
+#   --restart=unless-stopped  \
+#   -e TZ=Asia/Shanghai \
+#   -e ENVOY_UID=0 \
+#   -p 8080:8080 \
+#   -p 32082:32082 \
+#   -v ./edge-proxy:/etc/envoy
+#   --privileged \
+#   --net=app-net \
+#   -d envoyproxy/envoy-alpine:v1.17.0
+#
+version: '2'
+services:
+  envoy:
+    image: envoyproxy/envoy-alpine:v1.17.0
+    # image: envoyproxy/envoy-alpine:v1.16.2
+    container_name: envoy
+    restart: unless-stopped
+    environment:
+      TZ: 'Asia/Shanghai' 
+      ENVOY_UID: 0
+    ports:
+      - '80:80'
+      - '443:443'
+      # - '0.0.0.0:8443:8443'
+      # - '127.0.0.1:15001:15001'
+      #- '22:22'
+    volumes:
+      - ./edge-proxy:/etc/envoy
+      # - ./conf:/etc/envoy
+      #- ./etc/ssl/router.jia54321.io:/etc/ssl/router.jia54321.io
+    # host
+    # network_mode: "host"
+    networks:
+      - app-net
+networks:
+  app-net:
+    external:
+      name: app-net

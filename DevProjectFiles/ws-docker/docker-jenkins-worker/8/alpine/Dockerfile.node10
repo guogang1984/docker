@@ -1,13 +1,30 @@
-FROM g127/java as builder
+# The MIT License
+#
+#  Copyright (c) 2015-2020, CloudBees, Inc. and other Jenkins contributors
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
 
-RUN echo "ok"
+# FROM openjdk:8-jdk-alpine3.9
+FROM g127/java
 
-FROM g127/jenkins-casc:lts-alpine
-
-USER root
-
-# nodejs begin
-ENV NODE_VERSION 14.11.0
+# nodejs begin https://github.com/nodejs/docker-node/tree/master/12/alpine3.10
+ENV NODE_VERSION 10.23.0
 
 RUN addgroup -g 2000 node \
     && adduser -u 2000 -G node -s /bin/sh -D node \
@@ -19,7 +36,7 @@ RUN addgroup -g 2000 node \
       && case "${alpineArch##*-}" in \
         x86_64) \
           ARCH='x64' \
-          CHECKSUM="de7f2885da05f33b26b387a7ba017d27cc22ad9ef5a3a45d366e62218fcb8661" \
+          CHECKSUM="149ab80ab7e618acd7b8402dbb86ff13d89cd4a0b39d45ee9b735944e1b89737" \
           ;; \
         *) ;; \
       esac \
@@ -40,11 +57,12 @@ RUN addgroup -g 2000 node \
         libgcc \
         linux-headers \
         make \
-        python \
+        python2 \
     # gpg keys listed at https://github.com/nodejs/node#release-keys
     && for key in \
       4ED778F539E3634C779C87C6D7062848A1AB005C \
       94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
+      1C050899334244A8AF75E53792EF661D867B9DFA \
       71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
       8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
       C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
@@ -99,15 +117,32 @@ RUN apk add --no-cache --virtual .build-deps-yarn curl gnupg tar \
   && apk del .build-deps-yarn \
   # smoke test
   && yarn --version
+
 # nodejs end
 
 
-COPY --from=builder /opt /opt
+ARG VERSION=4.3
+ARG user=jenkins
+ARG group=jenkins
+ARG uid=1000
+ARG gid=1000
 
+RUN addgroup -g ${gid} ${group}
+RUN adduser -h /home/${user} -u ${uid} -G ${group} -D ${user}
+
+# LABEL Description="This is a base image, which provides the Jenkins agent executable (slave.jar)" Vendor="Jenkins project" Version="${VERSION}"
+LABEL Description="This is a base image, which allows connecting Jenkins agents via JNLP protocols" Vendor="Jenkins project" Version="${VERSION}"
+
+ARG AGENT_WORKDIR=/home/${user}/agent
+
+COPY jenkins-agent /usr/local/bin/jenkins-agent
+
+#
 RUN echo 'run script' \
     # setting apk mirror
     # && sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories \
     && sed -i 's/mirrors.tuna.tsinghua.edu.cn/dl-cdn.alpinelinux.org/g' /etc/apk/repositories \
+    && TSINGHUA_MIRROR=https://mirrors.tuna.tsinghua.edu.cn \
     && apk update \
     # curl
     && apk add --upgrade curl && curl --version \
@@ -115,6 +150,8 @@ RUN echo 'run script' \
     && apk add --upgrade git git-lfs && git --version \
     # svn
     && apk add --upgrade subversion && svn --version \
+    # rsync
+    && apk add --upgrade rsync && rsync --version \
     # ansible
     && apk add --upgrade ansible && mkdir -p /etc/ansible && echo "localhost" >/etc/ansible/hosts && ansible --version \
     # packer
@@ -138,17 +175,29 @@ RUN echo 'run script' \
     && mv /tmp/docker/* /usr/local/bin/ \
     && docker -v \
     # init folder
-    && export SWITCH_RUN=init && /opt/docker-entrypoint.sh
+    && export SWITCH_RUN=init && /opt/docker-entrypoint.sh 
 
-ENV PATH=${PATH}:/opt/jmeter/bin
+#
+RUN echo 'run script' \
+    # jenkins-remoting
+    && curl --create-dirs -fsSLo /usr/share/jenkins/agent.jar https://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/${VERSION}/remoting-${VERSION}.jar \
+    && chmod 755 /usr/share/jenkins \
+    && chmod 644 /usr/share/jenkins/agent.jar \
+    && ln -sf /usr/share/jenkins/agent.jar /usr/share/jenkins/slave.jar \
+    && chmod +x /usr/local/bin/jenkins-agent \
+    && ln -s /usr/local/bin/jenkins-agent /usr/local/bin/jenkins-slave \
+    && chown -R jenkins:jenkins /home/${user} \
+    && addgroup jenkins root && echo $(id jenkins) 
 
+USER ${user}
+ENV AGENT_WORKDIR=${AGENT_WORKDIR} \
+    PATH=${PATH}:/opt/jmeter/bin 
 
-USER jenkins
+RUN mkdir /home/${user}/.jenkins && mkdir -p ${AGENT_WORKDIR} &&  \
+    mkdir /home/${user}/.m2 
 
-# Disable signature checking on DownloadService
-#ENV JAVA_OPTS -Dhudson.model.DownloadService.noSignatureCheck=true
+VOLUME /home/${user}/.jenkins
+VOLUME ${AGENT_WORKDIR}
+WORKDIR /home/${user}
 
-# ENTRYPOINT
-ENTRYPOINT ["tini", "--", "/usr/local/bin/jenkins.sh"]
-
-
+ENTRYPOINT ["jenkins-agent"]

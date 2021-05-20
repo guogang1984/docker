@@ -1,41 +1,74 @@
-credentials:
-  system:
-    domainCredentials:
-      - credentials:
-          # git plugin 连接只支持 usernamePassword 和 证书两种方式
-          - usernamePassword:
-              scope: GLOBAL
-              id: "1"
-              username: "jenkins"
-              # 密码待修改
-              password: "jenkins123"
-          - usernamePassword:
-              scope: GLOBAL
-              id: "scmmanager"
-              username: "scmadmin"
-              # 密码待修改
-              password: "scmadmin"       
+#credentials:
+#  system:
+#    domainCredentials:
+#      - credentials:
+#          - usernamePassword:
+#              scope: GLOBAL
+#              id: "simple"
+#              username: ${SIMPLE_USERNAME:-dev}
+#              password: ${SIMPLE_PASSWORD:-dev123}
+#              description: "Username/Password Credentials for simple user-password"
+#          - basicSSHUserPrivateKey:
+#              scope: GLOBAL
+#              id: "ssh"
+#              username: ${SSH_USERNAME:-dev}
+#              passphrase: "" #Doable, but not recommended
+#              description: "SSH Credentials for ssh-username"
+#              privateKeySource:
+#                directEntry:
+#                  privateKey: ${SSH_PRIVATE_KEY} #Load from Environment Variable
+#          - string:
+#              scope: GLOBAL
+#              id: "secret-text"
+#              secret: ${SECRET_TEXT} #Load from Environment Variable
+#              description: "Secret Text"
+#          # other
+#          - usernamePassword:
+#              scope: GLOBAL
+#              id: "1"
+#              username: "jenkins"
+#              # 密码待修改
+#              password: "jenkins123"
+#          - usernamePassword:
+#              scope: GLOBAL
+#              id: "scmmanager"
+#              username: "scmadmin"
+#              # 密码待修改
+#              password: "scmadmin"
 #
 jenkins:
-  numExecutors: 4
-  scmCheckoutRetryCount: 3
+  disableRememberMe: false
   mode: NORMAL
-  quietPeriod: 5
-  crumbIssuer:
-    standard:
-      excludeClientIPFromCrumb: false
-  # globalNodeProperties:
-  # - envVars:
-  #     env:
-  #     - key: "gitlabUrl"
-  #       value: "http://localhost:9080"
-  #
+  # numExecutors: 6
+  # scmCheckoutRetryCount: 3
+  # quietPeriod: 5
+  # crumbIssuer:
+  #   standard:
+  #     excludeClientIPFromCrumb: true
+  # markupFormatter:
+  #   rawHtml:
+  #     disableSyntaxHighlighting: false
+  securityRealm:
+    local:
+      allowsSignup: false
+      # users:
+      #   - id: admin
+      #     password: admin123
+      #   - id: dev
+      #     password: dev
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+    # globalMatrix:
+    #   permissions:
+    #     - "Overall/Administer:authenticated"
   clouds:
     - docker:
         name: "docker"
         dockerApi:
           dockerHost:
-            uri: "unix:///var/run/docker.sock"
+            # uri: "unix:///var/run/docker.sock"
+            uri: "${DOCKER_HOST_URI}"
 
   agentProtocols:
     - "JNLP4-connect"
@@ -44,38 +77,26 @@ jenkins:
     enabled: true
   slaveAgentPort: ${SLAVE_AGENT_PORT:-50000}
 #
-unclassified:
-  location:
-    adminAddress: "support@topflames.com"
-    # url: "http://localhost:8080/"
-  mailer:
-    authentication:
-      username: "support@topflames.com"
-      password: "Tf123456"
-    charset: "UTF-8"
-    smtpHost: "smtp.exmail.qq.com"
-    useSsl: true
-    useTls: false
-  # globalLibraries:
-  #   libraries:
-  #   - name: "awesome-lib"
-  #   - defaultVersion: "master"
-  #     implicit: true
-  #     name: "awesome-lib"
-  #     retriever:
-  #       modernSCM:
-  #         scm:
-  #           git:
-  #             id: "awesome-lib"
-  #             remote: "https://github.com/jenkins-infra/pipeline-library.git"
-  #             traits:
-  #             - cloneOptionTrait:
-  #                 extension:
-  #                   depth: 1
-  #                   noTags: true
-  #                   shallow: true
-#
-
+# unclassified:
+#   location:
+#     adminAddress: "${MAIL_USERNAME:-support@topflames.com}"
+#     #url: "http://localhost:8080/"
+#   mailer:
+#     authentication:
+#       username: "${MAIL_USERNAME:-support@topflames.com}"
+#       password: "${MAIL_PASSWORD:-Tf123456}"
+#     charset: "UTF-8"
+#     smtpHost: "smtp.exmail.qq.com"
+#     useSsl: true
+#     useTls: false
+#   email-ext:
+#     charset: "UTF-8"
+#     mailAccount:
+#       address: "${MAIL_USERNAME:-support@topflames.com}"
+#       smtpHost: "smtp.exmail.qq.com"
+#       smtpUsername: "${MAIL_USERNAME:-support@topflames.com}"
+#       smtpPassword: "${MAIL_PASSWORD:-Tf123456}"
+#       useSsl: true
 jobs:
   - script: >
       job('seed') {
@@ -88,4 +109,47 @@ jobs:
           shell('echo job dsl!')
         }
       }
+  - script: >
+      folder('pipelineFolder') {
+        displayName('流水线目录')
+        description('自动生成目录，不要删除')
+      }
+  - script: >
+      folder('taskFolder') {
+        displayName('任务目录')
+        description('自动生成目录，不要删除')
+      }
+  - script: >
+      folder('testFolder') {
+        displayName('测试目录')
+        description('自动生成目录，不要删除')
+      }
+  - script: >
+      pipelineJob('testFolder/test') {
+        definition {
+          cps {
+            script("""\
+              pipeline {
+                agent any
+                stages {
+                  stage ('test') {
+                    steps {
+                      echo "hello"
+                      sh "mvn --version"
+                      sh "node --version"
+                      sh "gradle --version"
+                      sh "ansible --version"
+                      sh "git --version"
+                      sh "svn --version"
+                      sh "packer --version"
+                      sh "terraform --version"
+                      sh "docker -v"
+                    }
+                  }
+                }
+              }""".stripIndent())
+          }
+        }
+      }
+
 

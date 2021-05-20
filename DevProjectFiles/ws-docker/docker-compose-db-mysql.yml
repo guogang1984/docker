@@ -2,7 +2,7 @@
 #
 # 
 # docker run \
-#   --hostname mysql \
+#   --hostname db-mysql \
 #   --name db-mysql \
 #   --restart=unless-stopped  \
 #   -e MYSQL_ROOT_PASSWORD='root' \
@@ -12,7 +12,8 @@
 #   -v ~/DevProjectFiles/ws-data/mysql:/var/lib/mysql \
 #   -v ~/DevProjectFiles/ws-back:/DevProjectFiles/ws-back \
 #   --privileged \
-#   -d mysql:5.7
+#   --net=app-net \
+#   -d g127/mysql:5.7
 #
 # --------------------------------------------------------
 # mysql> grant all privileges on *.* to 'root'@'%' identified by 'root' with grant option;
@@ -22,6 +23,7 @@ services:
   mysql:
     image: 'mysql:5.7'
     container_name: db-mysql
+    # hostname: devops-mysql57.default.svc.cluster.local
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: 'root'
