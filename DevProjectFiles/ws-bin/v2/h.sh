@@ -317,10 +317,10 @@ function installEnv() {
     sudo nmcli con up eth0
     # 重新加载配置网络配置文件
     sudo nmcli con reload
-    #
-    sudo rpm -ivh http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-    sudo yum install -y ngrep
+    
     # 安装一些通用软件
+    sudo rpm -ivh http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    sudo yum install -y ngrep htop
     sudo yum install -y openssh wget curl dnsmasq bind-utils net-tools lrzsz rsync zip unzip nc selinux-policy*  yum-utils device-mapper-persistent-data lvm2 iptables-services kernel-devel usbutils pciutils
     # 安装所有32位程序需要组件的方法
     # <!--ia32-libs.i686 //是ubuntu系列下的,而且13.10之后的ubuntu貌似也没这个了-->
