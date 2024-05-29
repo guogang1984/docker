@@ -350,11 +350,12 @@ function installDocker() {
     sudo yum install -y yum-utils device-mapper-persistent-data lvm2
     # step 2: 添加软件源信息
     sudo yum-config-manager --add-repo \
-        http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+        https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
     # step 3: 更新并安装 Docker-CE
     sudo yum makecache fast
     sudo yum list available docker-ce --showduplicates
-    sudo yum install -y docker-ce-18.09.9 docker-ce-cli-18.09.9 containerd.io
+    # sudo yum install -y docker-ce-18.09.9 docker-ce-cli-18.09.9 containerd.io
+    sudo yum install -y docker-ce-3:23.0.6-1.el7.x86_64 docker-ce-cli-3:23.0.6-1.el7 .x86_64 containerd.io
     # sudo yum -y install docker-ce
     # step 4: 开启Docker服务
     sudo service docker start 
