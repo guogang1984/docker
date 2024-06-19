@@ -23,6 +23,8 @@ services:
       - TZ=Asia/Shanghai
       - FTP_USER=username
       - FTP_PASS=pwd
+      #- LOG_STDOUT=YES
+      - PASV_ENABLE=NO
       - PASV_ADDRESS=192.168.0.23
       - PASV_MIN_PORT=21100
       - PASV_MAX_PORT=21110
@@ -31,4 +33,4 @@ services:
     ports:
       - "20:20"
       - "21:21"
-      - "21100-21110:21100-21110"
+      #- "21100-21110:21100-21110"
