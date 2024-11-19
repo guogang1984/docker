@@ -319,7 +319,8 @@ function installEnv() {
     sudo nmcli con reload
     
     # 安装一些通用软件
-    sudo rpm -ivh http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    # 失效 sudo rpm -ivh http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    sudo yum -y install epel-release
     sudo yum install -y ngrep htop
     sudo yum install -y openssh wget curl dnsmasq bind-utils net-tools lrzsz rsync zip unzip nc selinux-policy*  yum-utils device-mapper-persistent-data lvm2 iptables-services kernel-devel usbutils pciutils
     # 安装所有32位程序需要组件的方法
