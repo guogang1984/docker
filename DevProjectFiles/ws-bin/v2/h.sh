@@ -325,6 +325,9 @@ function installEnv() {
     sudo yum install -y ngrep htop
     # ngrep 常用命令
     # ngrep -W byline -d ens160 port 80 | grep HTTP
+    # Linux下查看tcp连接数及状态命令
+    # netstat -n | awk '/^tcp/ {++S[$NF]} END {for(a in S) print a, S[a]}'
+    # dmesg -T
     sudo yum install -y openssh wget curl dnsmasq bind-utils net-tools lrzsz rsync zip unzip nc selinux-policy*  yum-utils device-mapper-persistent-data lvm2 iptables-services kernel-devel usbutils pciutils
     # 安装所有32位程序需要组件的方法
     # <!--ia32-libs.i686 //是ubuntu系列下的,而且13.10之后的ubuntu貌似也没这个了-->
